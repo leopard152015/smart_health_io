@@ -62,6 +62,11 @@ The main contributions in this work are 4-fold:
   - Theard, we will construct a classifying model from previous data, which helps us to represent a health care context (including biometric data, possible diseases, fitness status, intensity of the activity)  in order to understand connection between genotypes and phenotypes.
   - Forth, we will use combined analysis of pleiotropy and epistasis to  examine interactions for the previously determined phenotypes, which revealed an extensive directed network of genetic loci interacting with each other. We found these interactions to be useful in generating hypotheses for functional relationships between genetic loci. Epistasis is often difficult to interpret in terms of biological consequences or overall genetic architecture. Here we investigate the prevalence and consequences of epistasis by analyzing features which have been got on the first step. Taking into account dimension of genetic information we suppose to implement deep learning algorithms for decision of this task.  
 
+As result we hope to determine in case BBS:
+
+ -  Role in energy regulation;
+ -  Gene-phenotype;
+ -  Role/mechanisms in common obesity
 
 All analyses were made using the differenet packages  from the R software[[14]](www.cran.r-project.org).
 
@@ -440,8 +445,11 @@ It is seen  that two components of signal (Body and Gravity) from accelerometer 
 Basic idea is to  substitute 10% of the most important variables  for the begining,  and then to continue  increasing by 10% with  control of accuracy. Achieving maximum, will reduce step at first to 5%, then to 2.5% and, at last, to one variable. 
 SVM  model with recived variables:
 ```{r echo=F}
+
 #.activitySVMimp(vars)
+
 ```
+
 As result the maximum of accuracy has appeared around 490 variables and has made 0.9545, that is better on quarter of percent than previous value  from full set of variables.
 
 **`Second approach: important variables with Interquartile range`** 
@@ -465,7 +473,7 @@ Having received the arranged list of important variables with IRQ  we apply them
 ```
 Accuracy is not significantly increased.
 
-The difference of  resulatats  could be explained by the fact that in dataset some variables give more information than others. It is well visible if to construct diagrams of variables with the different IGR value. For example we have selectes the 10th and 551st: in case of high IGR the  points are  visually separated over against  low IGR case, which  is also carry  some portion of useful information.
+The difference of  resulatats  could be explained by the fact that in dataset some variables give more information than others. It is well visible if to construct diagrams of variables with the different IGR value. For example we have selectes the two variavles in two opposite cases: in case of high IGR the  points are  visually separated over against  low IGR case, which  is also carry  some portion of useful information.
 
 Finally number of classes also plays some role in it, because  reaching the maximum accuracy in the one class, we lose performance in another. This can be shown on the discrepancy matrices for two different sets of attributes with the same precision:
 
@@ -1226,6 +1234,10 @@ identified in families by linkage or in populations by genetic association (GWAS
 
 ### Example GWAS approach for TTC8 gene - responsible in Bardet-Biedl Syndrome 8 (BBS8)
 BBS8 is caused by homozygous mutations in the TTC8 gene (608132) on chromosome 14q31.
+Let's give one example of High Throughput Sequence Analysis useing Bioconductor and
+display gene models and underlying support across BAM (aligned read) files.
+We used BAM files from Bioconductor  experiment data package RNAseqData.HNRNPC.bam.chr14 which contains 8 BAM files from an experiment involving knockdown of gene HNRNPC.
+Here the plot of Region track:
 
 ```{r echo=F}
 library(RNAseqData.HNRNPC.bam.chr14)
@@ -1240,13 +1252,19 @@ library(GenomicFiles)
 source("GWASchr14bbs.R")
 .getGWAS("TTC8")
 ```
-
+**(to be continued)**
 
 ## Detecting epistasis and pleiotropy in case of obesity. (The mouse study)
+
 Epistasis, the  phenomenon in which several loci (genes) collectively affecting a single trait (gene) and  pleiotropy, single locus (gene) affecting more than one trait (phenotypes), have long been recognized to be central of understanding  of  gene  expression. Epistasis and Pleiotropy require defining  a  appropriate genetic element from  variety of ways ( a gene, a chromosomal segment with high linkage disequilibrium or mutation). For example in arcticle[11] Darabos et al. use SNPs and genes, while in [12] Philip et al.use expression quantitative trait loci (eQTL) as genetic elements.
 A quantitative trait locus (QTL) is a section of DNA (the locus) that correlates with variation in a phenotype (the quantitative trait).[1] The QTL typically is linked to, or contains, the genes that control that phenotype. QTLs are mapped by identifying which molecular markers (such as SNPs or AFLPs) correlate with an observed trait. This is often an early step in identifying and sequencing the actual genes that cause the trait variation.[38](https://en.wikipedia.org/wiki/Quantitative_trait_locus)
-In this section  we used a  recently developed method, Combined Analysis of Epistasis and Pleiotropy (CAPE), originally described in [8], that infers directed interaction networks between genetic variants for predicting the influence of genetic perturbations on phenotypes. The method uses regression on pairs of loci to detect interaction effects from each locus pair on each phenotype. It then combines model parameters across phenotypes to infer directed, QTL-to-QTL influences that replace the interaction effects on each phenotype. The result is a pair of directed coefficients modeling how the two loci influence each other’s activity, rather than how each pair independently affects each phenotype.
-
+In this section  we used a  recently developed method, Combined Analysis of Epistasis and Pleiotropy (CAPE), originally described in [8], that infers directed interaction networks between genetic variants for predicting the influence of genetic perturbations on phenotypes. We can applay this method in case of BBS by following reasons:
+ 
+ -  BBS is not absolutement monogenetic, but oligogenic: 12 genes at least; more to be discovered;
+ -  Recessive autosomic but also triallelic transmission (12/65 families with BBS mutation have another BBS mutation).  It means genetic epistasis;
+ -   More heterogeneous than thought.
+ 
+ The method uses regression on pairs of loci to detect interaction effects from each locus pair on each phenotype. It then combines model parameters across phenotypes to infer directed, QTL-to-QTL influences that replace the interaction effects on each phenotype. The result is a pair of directed coefficients modeling how the two loci influence each other’s activity, rather than how each pair independently affects each phenotype.
 
 
 ### Dataset
@@ -1303,6 +1321,9 @@ the three phenotypes. This eigentrait describes the processes by which body weig
 
 ### Single-Variant Scan
 Once the eigentraits for the analysis have been selected, the single-locus scan is run to investigate how individual markers are associated with each eigentrait. This scan performs a linear regression at each marker.
+Single-Variant Scan can be used as pre-processing step for filtering variants and to choose those that will be incuded in the pair scan. It is useful, taking into account that  the number of possible variant pairs may be too large to test exhaustively in case the large data sets. And it can helps to avoid  obscuring interactions by  large main effects - variants with large main-effects can be used as covariates in the pair scan.
+The single-marker scan currently does not support markers on sex chromosomes. Because
+the X chromosome is hemizygous in males, sex differences in phenotype can lead to false associations, and markers on this chromosome require special consideration [39].
 
 ```{r echo=F}
 obesity.singlescan <- singlescan(obesity.cross, n.perm = 100, 
@@ -1315,8 +1336,7 @@ The results of the single variant scan can be visualized
 plotSinglescan(data.obj = obesity.cross, singlescan.obj = obesity.singlescan, 
 mark.chr = TRUE, mark.covar = FALSE)
 ```
-In this figure the t-statistic (β/σ) of each marker is plotted as a vertical line. Results for both eigentraits are shown here as ET1 and ET2, and chromosome numbers are written along the x axis. In this example we will not filter the markers and use all markers in the pairwise scan.
-
+In this figure the t-statistic  of each marker is plotted as a vertical line. Results for both eigentraits are shown here as ET1 and ET2, and chromosome numbers are written along the x axis. In this example we will not filter the markers and use all markers in the pairwise scan.
 
 
 ### Pairwise Scan
@@ -1329,6 +1349,7 @@ singlescan.obj = obesity.singlescan)
 plotSinglescan(data.obj = obesity.cross, singlescan.obj = obesity.singlescan, 
 mark.chr = TRUE, show.rejected.markers = TRUE,  standardized = TRUE)
 
+  
 ```
 On figure we can see the locations of discarded markers, which markers have been selected for the pair scan and which have been rejected.
 After ensuring that all markers are linearly independent and thresholded satisfactorily, the pairscan can be run.
@@ -1354,31 +1375,32 @@ col.pal = "light", verbose = FALSE)
 
 
 This plot shows the resulting β/σ for each pair of markers for ET1. Gray and white bars show the boundaries of the chromosomes.
+**(to be continued)**
 
 ### Detection of Interactions
 ```{r echo=F}
-#obesity.cross <- error.prop(data.obj = obesity.cross, 
-#pairscan.obj = obesity.pairscan, 
-#perm = FALSE, verbose = FALSE, n.cores = 2)
-#obesity.cross <- error.prop(data.obj = obesity.cross, 
-#pairscan.obj = obesity.pairscan, 
-#perm = TRUE, verbose = FALSE, n.cores = 2)
-#obesity.cross <- calc.p(data.obj = obesity.cross, 
-#pairscan.obj = obesity.pairscan, pval.correction = "fdr",
-#n.cores = 2)
-#obesity.cross <- direct.influence(data.obj = obesity.cross, 
-#pairscan.obj = obesity.pairscan, pval.correction = "fdr")
-#plotVariantInfluences(obesity.cross, p.or.q = 0.05, 
-#standardize = TRUE, not.tested.col = "lightgray", 
-#pheno.width = 8)
+
+obesity.cross <- error.prop(data.obj = obesity.cross, 
+pairscan.obj = obesity.pairscan, 
+perm = FALSE, verbose = FALSE, n.cores = 2)
+obesity.cross <- error.prop(data.obj = obesity.cross, 
+pairscan.obj = obesity.pairscan, 
+perm = TRUE, verbose = FALSE, n.cores = 2)
+obesity.cross <- calc.p(data.obj = obesity.cross, 
+pairscan.obj = obesity.pairscan, pval.correction = "fdr",
+n.cores = 2)
+obesity.cross <- direct.influence(data.obj = obesity.cross, 
+pairscan.obj = obesity.pairscan, pval.correction = "fdr")
+plotVariantInfluences(obesity.cross, p.or.q = 0.05,  
+standardize = TRUE, not.tested.col = "lightgray", neg.col = "yellow", pos.col = "green",pheno.width = 8)
 ```
 
 ### Results
-
+**(to be continued)**
 ```{r echo=F, fig.height=6}
-#obesity.cross <- get.network(obesity.cross, p.or.q = 0.05, 
-#collapse.linked.markers = TRUE, standardize = FALSE)
-#plotNetwork(obesity.cross, collapsed.net = TRUE)
+obesity.cross <- get.network(obesity.cross, p.or.q = 0.05, 
+collapse.linked.markers = TRUE, standardize = FALSE)
+plotNetwork(obesity.cross, collapsed.net = TRUE, positive.col = "green", negative.col = "yellow")
 ```
 
 
@@ -1480,3 +1502,5 @@ say?” Journal of Experimental Education, vol. 71, no. 1, pp. 83–92, 2002.
 36. McTernan CL, McTernan PG, Harte AL, Levick PL, Barnett AH, et al. Resistin, central obesity, and type 2 diabetes. Lancet 359: 46-47.2002
 37. EN Nutrition - Publications - Obesity - Waist circumference and waist-hip ratio: report of a WHO Expert Consultation, December 2008.
 38. [wiki](https://en.wikipedia.org/wiki/Quantitative_trait_locus)
+39. Broman, K. W., Sen, S., Owens, S. E., Manichaikul, A., Southard-Smith, E. M., and
+Churchill, G. A. The X chromosome in quantitative trait locus mapping. Genetics, 174(4):2006.
