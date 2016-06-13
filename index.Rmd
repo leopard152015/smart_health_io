@@ -419,14 +419,18 @@ In this subsection as example of resolution of classification tasks two classica
 ```{r echo=F}
 .printReference <- function(file){
   ref <- read.xlsx( file, sheetIndex=1, header=TRUE )
+#  print(ref)
   #ref1 <- ref[2:nrow(ref),2:ncol(ref)]
+   matrix_ref <- matrix(ref[,4], nrow = 6, ncol = 6, byrow = TRUE )
+   rownames(matrix_ref) <- unique(ref[,2])
+   colnames(matrix_ref) <- unique(ref[,3])  
+   kable( matrix_ref , digits=10,  caption = "Reference" )
 
-  kable( t(as.matrix(ref)) , digits=10,  caption = "Reference" )
-}
+  }
 
 .printOverall <- function(file){
   overall <- read.xlsx( file, sheetIndex=2, header=TRUE )
-  kable(t( overall ), digits=10, caption = "Overall Statistics" )
+  kable(t( overall ), digits=15, caption = "Overall Statistics" )
 }
 
 .printClass <- function(file){
@@ -448,10 +452,14 @@ source("activity_rec.R")
 #if (switch_activity == 1){
 #  forest_full<-.activityRF()
 #}else {
-  file <- "data/conf_matrixRF.xlsx"
-#  .printReference("data/conf_matrixRF.xlsx")
-  .printOverall("data/conf_matrixRF.xlsx")
-  .printClass("data/conf_matrixRF.xlsx")
+file <- "data/conf_matrixRF.xlsx"
+
+.printReference("data/conf_matrixRF.xlsx")
+
+.printOverall("data/conf_matrixRF.xlsx")
+
+.printClass("data/conf_matrixRF.xlsx")
+
 #}
 ```
 
@@ -463,16 +471,19 @@ The parameters of model is following:
 #if (switch_activity == 1){
 #  .activitySVM()
 #}else {  
-#  .printReference("data/conf_matrixSVM.xlsx")
-  .printOverall("data/conf_matrixSVM.xlsx")
-  .printClass("data/conf_matrixSVM.xlsx")
+.printReference("data/conf_matrixSVM.xlsx")
+
+.printOverall("data/conf_matrixSVM.xlsx")
+
+.printClass("data/conf_matrixSVM.xlsx")
 #}  
+
 ```
 
 **`Important variables`**
 
 Variable extraction - important variables with RF:
-![Fig. Example IGR = 0.88](assets/img/imp_varRF.png)
+![Fig. Important variables from RF](assets/img/imp_varRF.png)
 ```{r echo=F}
 if (switch_activity == 1){
   vars<-.activityIMP(forest_full)
@@ -483,15 +494,19 @@ It is seen  that two components of signal (Body and Gravity) from accelerometer 
 **`Check important variables on SVM`**
 
 Basic idea is to  substitute 10% of the most important variables  for the begining,  and then to continue  increasing by 10% with  control of accuracy. Achieving maximum, will reduce step at first to 5%, then to 2.5% and, at last, to one variable. 
-SVM  model with recived variables:
+
 ```{r echo=F}
+#SVM  model with recived variables:
 if (switch_activity == 1){
   .activitySVMimp(vars)
 }#else {  
-#  .printReference("data/conf_matrix(imp_val)SVM.xlsx")
-#  .printOverall("data/conf_matrix(imp_val)SVM.xlsx")
+
+.printReference("data/conf_matrix(imp_val)SVM.xlsx")
+
+.printOverall("data/conf_matrix(imp_val)SVM.xlsx")
 #  .printClass("data/conf_matrix(imp_val)SVM.xlsx")
 #}
+
 ```
 
 As result the maximum of accuracy has appeared around 490 variables and has made 0.9545, that is better on quarter of percent than previous value  from full set of variables.
@@ -504,36 +519,51 @@ if (switch_activity == 1){
   vars <-.activityIGR()
 }  
 ```
-![Fig. Example IGR = 0.88](assets/img/imp_varIGR.png)
+![Fig. Important variables from IGR](assets/img/imp_varIGR.png)
 Maximum IGR value = 0.897, minimum = 0.
-As it is seen, IRG gives absolutely other set of important variables than RF ( only five variables are the same ).The gyroscope again is not present among the most important value. But it is a lot of variables from the accelerometer X components.
-Having received the arranged list of important variables with IRQ  we apply them for SVM and RF: 
+As it is seen, IGR gives different set of important variables than RF ( only five variables are the same ).The gyroscope again is not present among the most important value. But it is a lot of variables from the accelerometer X components.
 
-**`Control: SVM with best IGR variables`**
+The difference of  resulatats  could be explained by the fact that in dataset some variables give more information than others. It is well visible if to construct diagrams of variables with the different IGR value. For example we have selectes the two variables in two opposite cases: in case of high IGR the  points are  visually separated over against  low IGR case, which  is also carry  some portion of useful information.
+![Fig. Example IGR = 0.88](assets/img/exmpl_igr_hight.png)
+![Fig. Example IGR = 0.11](assets/img/exmpl_igr_low.png)
+Finally number of classes also plays some role in it, because  reaching the maximum accuracy in the one class, we can lose performance in another. This can be shown on the discrepancy matrices for two different sets of attributes with the same precision:
 
+
+**`Control: RF model (IGR 526 variables)`**
+
+```{r echo=F}
+
+#Having received the arranged list of important variables with IGR  we apply them for #RF and SVM: 
+if (switch_activity == 1){
+  .activityRFigr(vars)
+}  
+
+.printReference("data/conf_matrix(igr_val)RF.xlsx")
+
+#.printOverall("data/conf_matrix(igr_val)RF.xlsx")
+ 
+
+```
+
+**`Control: SVM model (547  IGR variables)`**
 ```{r echo=F}
 if (switch_activity == 1){
   .activitySVMigr(vars)
 }
+  
+.printReference("data/conf_matrix(igr_val)SVM.xlsx")
+
+#.printOverall("data/conf_matrix(igr_val)SVM.xlsx")
+
 ```
 
-**`Control: RF with best  IGR variables`**
-```{r echo=F}
-if (switch_activity == 1){
-  .activityRFigr(vars)
-}  
-```
-Accuracy is not significantly increased.
-
-The difference of  resulatats  could be explained by the fact that in dataset some variables give more information than others. It is well visible if to construct diagrams of variables with the different IGR value. For example we have selectes the two variables in two opposite cases: in case of high IGR the  points are  visually separated over against  low IGR case, which  is also carry  some portion of useful information.
-![Fig. Example IGR = 0.88](assets/img/exmpl_igr_hight.png)
-Finally number of classes also plays some role in it, because  reaching the maximum accuracy in the one class, we lose performance in another. This can be shown on the discrepancy matrices for two different sets of attributes with the same precision:
 
 **`Principal component analysis (PCA)`**
 ```{r echo=F}
 if ( switch_activity == 1 ){
   pca_train_data<-.activityPCA()
 }
+  
 ```
 
 **`RF with PCA data`**
@@ -541,16 +571,35 @@ if ( switch_activity == 1 ){
 if ( switch_activity == 1 ){
   .activityRFpca(pca_train_data)  
 }
+
+.printReference("data/conf_matrix(pca)RF.xlsx")
+
+.printOverall("data/conf_matrix(pca)RF.xlsx")
+
+#.printClass("data/conf_matrix(pca)RF.xlsx")  
+
 ```
 
 **`SVM with PCA data`**
 ```{r echo=F}
 if ( switch_activity == 1 ){
   .activitySVMpca(pca_train_data)
-}  
+}
+
+.printReference("data/conf_matrix(pca)SVM.xlsx")
+
+.printOverall("data/conf_matrix(pca)SVM.xlsx")
+
+#.printClass("data/conf_matrix(pca)SVM.xlsx")
+
 ```
 
+As it is shown in the tables, accuracy of SVM model is higher then RF.
 Above we demonstrated how to successfully perform human activity classification based on a simple feature extraction process of a smartphone time series. Two classifiers with varying computational costs and similar profiles of performance were utilised.
+
+**`Conclusion`**
+
+This test demonstrates that in case of human activity recognition SVM model works faster  and shows a little bit better accuracy than RF model. The lists of important variables by RF and IGR  raise the question of whether to use the gyroscope to improve recognition accuracy.   
 
 ### Food recognition
 Diet tracking is an important behavior change strategy for controlling obesity. However, manually recording foods eaten is tedious. Many diet tracking approaches have been proposed but have limitations. Recognizing food from photographs fails for complicated foods. Scanning food barcodes works but not all foods have barcodes. 
@@ -675,7 +724,7 @@ To perform this analysis, we obtained a small published dataset ([www.omicsonlin
 ### Correlation of physiological factors and obesity
 In a first step, we performed some simple statistical analysis (using the R language) to see how each of the physiological factors and genetic factors correlated with obesity, in particular the BMI and the WHR values. 
 ```{r eval=TRUE, echo=FALSE}
-library(pander)
+#library(pander)
 library(readxl)
 library(easyGgplot2)
 
@@ -1480,6 +1529,8 @@ This plot shows the resulting β/σ for each pair of markers for ET1. Gray and w
 **(to be continued)**
 
 ### Detection of Interactions
+
+Below we present plot of Variant influences, which is useful for identifying patterns in variant interactions and shows all significant influences between variants and between variants and phenotypes.
 ```{r echo=F}
 if (switch_cape == 1){
   obesity.cross <- error.prop(data.obj = obesity.cross, 
@@ -1497,12 +1548,25 @@ if (switch_cape == 1){
   plotVariantInfluences(obesity.cross, p.or.q = 0.05,  
   standardize = TRUE, not.tested.col = "lightgray", neg.col = "yellow", pos.col = "green",pheno.width = 8)
   dev.off()
+  writeVariantInfluences(obesity.cross, p.or.q = 0.05, filename = "data/Significant.Influences.txt")
 }  
+
 ```
 ![Fig. Plot Variant Influences](assets/img/variantInfluences.png)
 
+In the figure above all non-significant interactions are colored white.
+
+As an example, present first 7 rows of the table of significant influences:
+```{r echo=F}
+varInfluences <- read.table("data/Significant.Influences.txt", header=T, sep=",")
+h_vInf <- head(varInfluences, 7)
+kable(h_vInf, digites = 10)
+
+```
+
+
 ### Results
-**(to be continued)**
+The plot of network is demonstrated below. It presents the chromosomes in a circle and shows interactions as arrows between regions on chromosomes:
 ```{r echo=F, fig.height=6}
 if (switch_cape == 1){
   obesity.cross <- get.network(obesity.cross, p.or.q = 0.05, 
@@ -1513,6 +1577,9 @@ if (switch_cape == 1){
 }  
 ```
 ![Fig. Plot Network](assets/img/network.png)
+
+In this figure of the network, each chromosome is represented by a black bar and labeled with the chromosome number. Main effects are depicted in the gray
+circles outside the chromosome bars. Green segments represent significant positive main effects and yellow segments represent significant negative main effects. Interactions are denoted by arrows between chromosomal regions.
 
 ```{r echo=F, fig.height=6}
 #obesity.cross <- get.network(obesity.cross, p.or.q = 0.05, 
