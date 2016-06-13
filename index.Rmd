@@ -5,6 +5,7 @@ output:
   BiocStyle::html_document:
     fig_height: 3
     fig_width: 4
+    fig_caption: yes
     toc: yes
     toc_depth: 2
     number_sections: true
@@ -14,7 +15,7 @@ output:
 %% \VignetteEngine{knitr::rmarkdown}
 -->
 `r library("knitr")`
-`r opts_chunk$set(cache=FALSE, fig.width=6, fig.height=4, message=FALSE, warning=FALSE)`
+`r opts_chunk$set(cache=FALSE, fig.width=6, fig.height=4, message=FALSE, warning=FALSE,include=TRUE,fig.cap="Caption")`
 
 **Author: Ouskova-Leonteva Anna (<a
   href="mailto: leopard152015@gmail.com">leopard152015@gmail.com</a>)<br />
@@ -403,6 +404,7 @@ to check the activity distribution:
 sum_act <- summary(train_data$Activity)
 
 kable(t(sum_act), digits=1)#, col.names=c("Activity","Value") )
+switch_activity <- 0
 #sum_dt <-.tableForm(sum_act)
 #sum_dt
 ```
@@ -411,7 +413,31 @@ Cases are distributed almost equally, except maybe walking_down. Thus it can be 
 Accuracy.
 
 **`Modeling`**
+
 In this subsection as example of resolution of classification tasks two classical alhorithms will be applied: Random Forest, Support Vectors Machine.
+
+```{r echo=F}
+.printReference <- function(file){
+  ref <- read.xlsx( file, sheetIndex=1, header=TRUE )
+  #ref1 <- ref[2:nrow(ref),2:ncol(ref)]
+
+  kable( t(as.matrix(ref)) , digits=10,  caption = "Reference" )
+}
+
+.printOverall <- function(file){
+  overall <- read.xlsx( file, sheetIndex=2, header=TRUE )
+  kable(t( overall ), digits=10, caption = "Overall Statistics" )
+}
+
+.printClass <- function(file){
+  class <- read.xlsx( file, sheetIndex=3, header=TRUE )
+  kable( t( class ), digits=10,  caption="Statistics by Class" )  
+  
+}
+
+```
+
+
 
 **`Random Forest `**
 
@@ -419,24 +445,38 @@ We use  Random Forest as basic algorithm, because it has the built-in mechanism 
 The  quality of model is following: 
 ```{r echo=F}
 source("activity_rec.R")
-#forest_full<-.activityRF()
+#if (switch_activity == 1){
+#  forest_full<-.activityRF()
+#}else {
+  file <- "data/conf_matrixRF.xlsx"
+#  .printReference("data/conf_matrixRF.xlsx")
+  .printOverall("data/conf_matrixRF.xlsx")
+  .printClass("data/conf_matrixRF.xlsx")
+#}
 ```
 
 **`Support Vector Machine`**
 
-For comparation build SVM model.
+For comparation we build SVM model.
 The parameters of model is following: 
 ```{r echo=F}
-#.activitySVM()
-
+#if (switch_activity == 1){
+#  .activitySVM()
+#}else {  
+#  .printReference("data/conf_matrixSVM.xlsx")
+  .printOverall("data/conf_matrixSVM.xlsx")
+  .printClass("data/conf_matrixSVM.xlsx")
+#}  
 ```
+
 **`Important variables`**
 
-Variable extraction: important variables with RF:
+Variable extraction - important variables with RF:
+![Fig. Example IGR = 0.88](assets/img/imp_varRF.png)
 ```{r echo=F}
-
-#vars<-.activityIMP(forest_full)
-
+if (switch_activity == 1){
+  vars<-.activityIMP(forest_full)
+}
 ```
 It is seen  that two components of signal (Body and Gravity) from accelerometer presents  among the most important variables. But there are no data from gyroscope. In fact, that  could be suspicious.
 
@@ -445,18 +485,26 @@ It is seen  that two components of signal (Body and Gravity) from accelerometer 
 Basic idea is to  substitute 10% of the most important variables  for the begining,  and then to continue  increasing by 10% with  control of accuracy. Achieving maximum, will reduce step at first to 5%, then to 2.5% and, at last, to one variable. 
 SVM  model with recived variables:
 ```{r echo=F}
-
-#.activitySVMimp(vars)
-
+if (switch_activity == 1){
+  .activitySVMimp(vars)
+}#else {  
+#  .printReference("data/conf_matrix(imp_val)SVM.xlsx")
+#  .printOverall("data/conf_matrix(imp_val)SVM.xlsx")
+#  .printClass("data/conf_matrix(imp_val)SVM.xlsx")
+#}
 ```
 
 As result the maximum of accuracy has appeared around 490 variables and has made 0.9545, that is better on quarter of percent than previous value  from full set of variables.
 
-**`Second approach: important variables with Interquartile range`** 
-For being determined in choice of important variable, we apply Interquartile range (IQR). The IQR is a measure of variability, based on dividing a data set into quartiles.  After calculation of IGR,  the list of variables was arranged in decreasing order of value. The first 20 from this list is  following:
+**`Second approach: important variables with Information gain ratio`** 
+
+For being determined in choice of important variable, we apply Information gain ratio (IGR).  After calculation of IGR,  the list of variables was arranged in decreasing order of value. The first 20 from this list is  following:
 ```{r echo=F}
-#vars <-.activityIGR()
+if (switch_activity == 1){
+  vars <-.activityIGR()
+}  
 ```
+![Fig. Example IGR = 0.88](assets/img/imp_varIGR.png)
 Maximum IGR value = 0.897, minimum = 0.
 As it is seen, IRG gives absolutely other set of important variables than RF ( only five variables are the same ).The gyroscope again is not present among the most important value. But it is a lot of variables from the accelerometer X components.
 Having received the arranged list of important variables with IRQ  we apply them for SVM and RF: 
@@ -464,32 +512,42 @@ Having received the arranged list of important variables with IRQ  we apply them
 **`Control: SVM with best IGR variables`**
 
 ```{r echo=F}
-#.activitySVMigr(vars)
+if (switch_activity == 1){
+  .activitySVMigr(vars)
+}
 ```
 
 **`Control: RF with best  IGR variables`**
 ```{r echo=F}
-#.activityRFigr(vars)
+if (switch_activity == 1){
+  .activityRFigr(vars)
+}  
 ```
 Accuracy is not significantly increased.
 
-The difference of  resulatats  could be explained by the fact that in dataset some variables give more information than others. It is well visible if to construct diagrams of variables with the different IGR value. For example we have selectes the two variavles in two opposite cases: in case of high IGR the  points are  visually separated over against  low IGR case, which  is also carry  some portion of useful information.
-
+The difference of  resulatats  could be explained by the fact that in dataset some variables give more information than others. It is well visible if to construct diagrams of variables with the different IGR value. For example we have selectes the two variables in two opposite cases: in case of high IGR the  points are  visually separated over against  low IGR case, which  is also carry  some portion of useful information.
+![Fig. Example IGR = 0.88](assets/img/exmpl_igr_hight.png)
 Finally number of classes also plays some role in it, because  reaching the maximum accuracy in the one class, we lose performance in another. This can be shown on the discrepancy matrices for two different sets of attributes with the same precision:
 
 **`Principal component analysis (PCA)`**
 ```{r echo=F}
-#pca_train_data<-.activityPCA()
+if ( switch_activity == 1 ){
+  pca_train_data<-.activityPCA()
+}
 ```
 
 **`RF with PCA data`**
 ```{r echo=F}
-#.activityRFpca(pca_train_data)  
+if ( switch_activity == 1 ){
+  .activityRFpca(pca_train_data)  
+}
 ```
 
 **`SVM with PCA data`**
 ```{r echo=F}
-#.activitySVMpca(pca_train_data)
+if ( switch_activity == 1 ){
+  .activitySVMpca(pca_train_data)
+}  
 ```
 
 Above we demonstrated how to successfully perform human activity classification based on a simple feature extraction process of a smartphone time series. Two classifiers with varying computational costs and similar profiles of performance were utilised.
@@ -1250,9 +1308,15 @@ library(GenomicFiles)
 ## Get all SYMBOLs on chr14
 
 source("GWASchr14bbs.R")
-.getGWAS("TTC8")
+switch_gwas <- 0
+if (switch_gwas == 1){
+png("assets/img/GWASchr14TTC8.png")  
+  .getGWAS("TTC8")
+dev.off()  
+}  
 ```
 **(to be continued)**
+[Fig. Region track](assets/img/GWASchr14TTC8.png)
 
 ## Detecting epistasis and pleiotropy in case of obesity. (The mouse study)
 
@@ -1277,21 +1341,33 @@ d<-data(obesity)
 #print(str(obesity))
 d<-data(obesity.cross)
 print(str(obesity.cross))
-
+switch_cape <- 0
 ```
 
 ### Examining the Data
 Firstly, we perform the distribution of each phenotype:
 ```{r echo=F, fig.width=15, fig.height=5}
-histPheno(obesity.cross)
+if (switch_cape == 1){
+  png("assets/img/histPheno.png")
+  histPheno(obesity.cross)
+  dev.off()
+}  
 ```
+![Fig. Histograms of phenotypes](assets/img/histPheno.png)
+
 While body weight looks relatively normally distributed, glucose and insulin have obviously non-normal distributions. Before proceeding with the analysis we mean centre and normalize all phenotypes. After normalization, only insulin
 still has a ceiling effect, which cannot be removed by normalization because rank cannot be determined among equal values. 
 Then we examen the Q-Q plots of pairs of phenotypes for  reveal phenotyping errors and other pathologies.
 ```{r echo=F, fig.width=15, fig.height=5}
-obesity.cross <- norm.pheno(obesity.cross, mean.center = TRUE)
-qqPheno(obesity.cross)
+if (switch_cape == 1){
+  obesity.cross <- norm.pheno(obesity.cross, mean.center = TRUE)
+  png("assets/img/qqPheno.png")
+  qqPheno(obesity.cross)
+  dev.off()
+}  
 ```
+![Fig. QQ-plots for pairs of phenotypes.](assets/img/qqPheno.png)
+
 Here the ceiling effect is visible in the insulin measurement
 and this cannot be removed through normalization. Moreover, the distribution is more
 similar to those of the other phenotypes than before normalization. Knowing that this ceiling effect we  can simply remove  insulin from the analysis, but here we will it rest in data object.
@@ -1302,20 +1378,31 @@ may describe multiple aspects of a single complex trait, (in this case -  obesit
 The central assumption of this method is that different genetic interactions found for a single gene pair in the context of different phenotypes represent multiple manifestations of a single underlying gene network. By measuring the interactions between genetic variants in different contexts we can gain a clearer picture of the network underlying statistical epistasis [8].
 By examining the correlations between phenotypes, we can see that the phenotypes measured in this experiment are correlated, but not identical across all individuals.
 ```{r echo=F}
-obesity.cross <- pheno2covar(obesity.cross, "mom")
-plotPhenoCor(obesity.cross, color.by = "mom", group.labels = c("non-obese", "obese"))
-
+if (switch_cape == 1){
+  obesity.cross <- pheno2covar(obesity.cross, "mom")
+  png("assets/img/corPheno.png")
+  plotPhenoCor(obesity.cross, color.by = "mom", group.labels = c("non-obese","obese"))
+  dev.off()
+}  
+  
 ```
+![Fig. Correlations between phenotypes](assets/img/corPheno.png)
 
 ### Singular value decomposition  of phenotype matrix
 Singular value decomposition (SVD) is a factorization method that decomposes the data into a set of mutually orthogonal "eigentraits" that are sorted according to variance explained [10].  One benefit of this process is that variants that are weakly correlated to several phenotypes due to common underlying processes may be strongly correlated to one of the eigentraits. This eigentrait captures the information of the underlying process, making strong main effects distributed between phenotypes easier to detect and identify as potential interaction loci and/or covariates.
 Before the selection of eigentraits, the eigentraits should be examined
 ```{r echo=F, fig.height=4.5}
-obesity.cross <- get.eigentraits(obesity.cross, scale.pheno = FALSE,
-normalize.pheno = FALSE)
-plotSVD(obesity.cross, orientation = "horizontal", neg.col = "yellow", pos.col =  "green", light.dark = "light")
-obesity.cross <- select.eigentraits(obesity.cross, traits.which = c(1,2))
+if (switch_cape == 1){
+  obesity.cross <- get.eigentraits(obesity.cross, scale.pheno = FALSE,
+  normalize.pheno = FALSE)
+  png("assets/img/SVD.png")
+  plotSVD(obesity.cross, orientation = "horizontal", neg.col = "yellow", pos.col =  "green", light.dark = "light")
+  obesity.cross <- select.eigentraits(obesity.cross, traits.which = c(1,2))
+  dev.off()
+}
 ```
+![Fig. The results of the singular value decomposition](assets/img/SVD.png)
+
 Here, the first eigentrait captures more than 70% of the variance in
 the three phenotypes. This eigentrait describes the processes by which body weight, glucose levels, and insulin levels all vary together. The second eigentrait captures nearly 20% of the variance in the phenotypes. It captures the processes through which glucose and body weight vary in opposite directions. This eigentrait may be important in distinguishing the genetic discordance between obesity and diabetes.
 
@@ -1326,16 +1413,24 @@ The single-marker scan currently does not support markers on sex chromosomes. Be
 the X chromosome is hemizygous in males, sex differences in phenotype can lead to false associations, and markers on this chromosome require special consideration [39].
 
 ```{r echo=F}
-obesity.singlescan <- singlescan(obesity.cross, n.perm = 100, 
-covar = "mom", scan.what = "eigentraits", alpha = c(0.01, 0.05), 
-verbose = FALSE, use.kinship = FALSE, overwrite.alert = FALSE,
-run.parallel = FALSE, n.cores = 2)
+if (switch_cape == 1){
+  obesity.singlescan <- singlescan(obesity.cross, n.perm = 100, 
+  covar = "mom", scan.what = "eigentraits", alpha = c(0.01, 0.05), 
+  verbose = FALSE, use.kinship = FALSE, overwrite.alert = FALSE,
+  run.parallel = FALSE, n.cores = 2)
+}  
 ```
 The results of the single variant scan can be visualized
 ```{r echo=F, fig.height = 6}
-plotSinglescan(data.obj = obesity.cross, singlescan.obj = obesity.singlescan, 
-mark.chr = TRUE, mark.covar = FALSE)
+if (switch_cape == 1){
+  png("assets/img/singleScane.png")
+  plotSinglescan(data.obj = obesity.cross, singlescan.obj = obesity.singlescan, 
+  mark.chr = TRUE, mark.covar = FALSE)
+  dev.off()
+}  
 ```
+![Fig. The results of the single-locus scan ](assets/img/singleScane.png)
+
 In this figure the t-statistic  of each marker is plotted as a vertical line. Results for both eigentraits are shown here as ET1 and ET2, and chromosome numbers are written along the x axis. In this example we will not filter the markers and use all markers in the pairwise scan.
 
 
@@ -1344,65 +1439,80 @@ The purpose of the pairwise scan is to find interactions, or epistasis, between 
 But before running the pair scan, it is important that we reduce the genetic matrix to only markers that are linearly independent of one another. We need calculate the correlation between all pairs of markers and  in case of founding pair perfectly
 correlated, the first marker is removed. 
 ```{r echo=F, fig.height=6}
-obesity.cross <- select.markers.for.pairscan(data.obj = obesity.cross, 
-singlescan.obj = obesity.singlescan)
-plotSinglescan(data.obj = obesity.cross, singlescan.obj = obesity.singlescan, 
-mark.chr = TRUE, show.rejected.markers = TRUE,  standardized = TRUE)
-
-  
+if (switch_cape == 1){
+  obesity.cross <- select.markers.for.pairscan(data.obj = obesity.cross, 
+  singlescan.obj = obesity.singlescan)
+  png("assets/img/singleScanSelect.png")
+  plotSinglescan(data.obj = obesity.cross, singlescan.obj = obesity.singlescan, 
+  mark.chr = TRUE, show.rejected.markers = TRUE,  standardized = TRUE)
+  dev.off()
+}  
 ```
+![Fig. The results of the  markers selected for pairscan](assets/img/singleScane.png)
+
 On figure we can see the locations of discarded markers, which markers have been selected for the pair scan and which have been rejected.
 After ensuring that all markers are linearly independent and thresholded satisfactorily, the pairscan can be run.
 ```{r  echo=F }
 #fig=F, print=F, echo=F}
+if (switch_cape == 1){
+  obesity.pairscan <- pairscan(data.obj = obesity.cross, covar = "mom", 
+  scan.what = "eigentraits", total.perm = 1000, min.per.genotype = 6, 
+  verbose = F, overwrite.alert = FALSE, n.cores = 2)
 
-obesity.pairscan <- pairscan(data.obj = obesity.cross, covar = "mom", 
-scan.what = "eigentraits", total.perm = 1000, min.per.genotype = 6, 
-verbose = F, overwrite.alert = FALSE, n.cores = 2)
-plotPairscan(data.obj = obesity.cross, pairscan.obj = obesity.pairscan, 
-phenotype = "ET1", pdf.label = "data/Pairscan-Regression.pdf" ,
-neg.col = "yellow", pos.col = "green", 
-col.pal = "light", verbose = FALSE)
-
+  plotPairscan(data.obj = obesity.cross, pairscan.obj = obesity.pairscan, 
+  phenotype = "ET1", pdf.label = "assets/img/Pairscan-Regression.pdf" ,
+  neg.col = "yellow", pos.col = "green", 
+  col.pal = "light", verbose = FALSE)
+}
 #cat('<iframe src="Pairscan-Regression.pdf" width="1200"" height="560"> </iframe>')
 #![](Pairscan_Regression.pdf)
 #\begin{center}
 #\includegraphics[width=4in]{Pairscan_Regression.pdf}
 #\end{center}
 #[Pairscan-Regression](Pairscan-Regression.pdf)
+#[Fig. Pairscan-Regression](data/Pairscan-Regression.pdf)
 ```
-[Fig. Pairscan-Regression](data/Pairscan-Regression.pdf)
+![Fig. The results of the pair scan](assets/img/Pairscan-Regression.pdf)
 
+\includegraphics{assets/img/Pairscan-Regression.pdf}
 
 This plot shows the resulting β/σ for each pair of markers for ET1. Gray and white bars show the boundaries of the chromosomes.
 **(to be continued)**
 
 ### Detection of Interactions
 ```{r echo=F}
-
-obesity.cross <- error.prop(data.obj = obesity.cross, 
-pairscan.obj = obesity.pairscan, 
-perm = FALSE, verbose = FALSE, n.cores = 2)
-obesity.cross <- error.prop(data.obj = obesity.cross, 
-pairscan.obj = obesity.pairscan, 
-perm = TRUE, verbose = FALSE, n.cores = 2)
-obesity.cross <- calc.p(data.obj = obesity.cross, 
-pairscan.obj = obesity.pairscan, pval.correction = "fdr",
-n.cores = 2)
-obesity.cross <- direct.influence(data.obj = obesity.cross, 
-pairscan.obj = obesity.pairscan, pval.correction = "fdr")
-plotVariantInfluences(obesity.cross, p.or.q = 0.05,  
-standardize = TRUE, not.tested.col = "lightgray", neg.col = "yellow", pos.col = "green",pheno.width = 8)
+if (switch_cape == 1){
+  obesity.cross <- error.prop(data.obj = obesity.cross, 
+  pairscan.obj = obesity.pairscan, 
+  perm = FALSE, verbose = FALSE, n.cores = 2)
+  obesity.cross <- error.prop(data.obj = obesity.cross, 
+  pairscan.obj = obesity.pairscan, 
+  perm = TRUE, verbose = FALSE, n.cores = 2)
+  obesity.cross <- calc.p(data.obj = obesity.cross, 
+  pairscan.obj = obesity.pairscan, pval.correction = "fdr",
+  n.cores = 2)
+  obesity.cross <- direct.influence(data.obj = obesity.cross, 
+  pairscan.obj = obesity.pairscan, pval.correction = "fdr")
+  png("assets/img/variantInfluences.png")
+  plotVariantInfluences(obesity.cross, p.or.q = 0.05,  
+  standardize = TRUE, not.tested.col = "lightgray", neg.col = "yellow", pos.col = "green",pheno.width = 8)
+  dev.off()
+}  
 ```
+![Fig. Plot Variant Influences](assets/img/variantInfluences.png)
 
 ### Results
 **(to be continued)**
 ```{r echo=F, fig.height=6}
-obesity.cross <- get.network(obesity.cross, p.or.q = 0.05, 
-collapse.linked.markers = TRUE, standardize = FALSE)
-plotNetwork(obesity.cross, collapsed.net = TRUE, positive.col = "green", negative.col = "yellow")
+if (switch_cape == 1){
+  obesity.cross <- get.network(obesity.cross, p.or.q = 0.05, 
+  collapse.linked.markers = TRUE, standardize = FALSE)
+  png("assets/img/network.png")
+  plotNetwork(obesity.cross, collapsed.net = TRUE, positive.col = "green", negative.col = "yellow")
+  dev.off()
+}  
 ```
-
+![Fig. Plot Network](assets/img/network.png)
 
 ```{r echo=F, fig.height=6}
 #obesity.cross <- get.network(obesity.cross, p.or.q = 0.05, 
