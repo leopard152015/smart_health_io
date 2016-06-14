@@ -494,7 +494,19 @@ It is seen  that two components of signal (Body and Gravity) from accelerometer 
 **`Check important variables on SVM`**
 
 Basic idea is to  substitute 10% of the most important variables  for the begining,  and then to continue  increasing by 10% with  control of accuracy. Achieving maximum, will reduce step at first to 5%, then to 2.5% and, at last, to one variable. 
+Model with 440 variables:
+```{r echo = F}
+if (switch_activity == 1){
+  .activitySVMimp(vars)
+}  
 
+.printReference("data/conf_matrix(imp_val440)SVM.xlsx")
+
+.printOverall("data/conf_matrix(imp_val440)SVM.xlsx")
+
+```
+
+Model with 490 variables:
 ```{r echo=F}
 #SVM  model with recived variables:
 if (switch_activity == 1){
@@ -509,11 +521,11 @@ if (switch_activity == 1){
 
 ```
 
-As result the maximum of accuracy has appeared around 490 variables and has made 0.9545, that is better on quarter of percent than previous value  from full set of variables.
+As result the maximum of accuracy has appeared around 490 variables and has made 0.952 (on 440 variables - 0,950), that is better on  0,1% than previous value  from full set of variables, but training time is half less (see table of Time perfomance)
 
 **`Second approach: important variables with Information gain ratio`** 
 
-For being determined in choice of important variable, we apply Information gain ratio (IGR).  After calculation of IGR,  the list of variables was arranged in decreasing order of value. The first 20 from this list is  following:
+For being determined in choice of important variable, we apply Information gain ratio (IGR). Information gain tells us how important a given attribute of the feature vectors is. After calculation of IGR,  the list of variables was arranged in decreasing order of value. The first 20 from this list is  following:
 ```{r echo=F}
 if (switch_activity == 1){
   vars <-.activityIGR()
@@ -523,48 +535,25 @@ if (switch_activity == 1){
 Maximum IGR value = 0.897, minimum = 0.
 As it is seen, IGR gives different set of important variables than RF ( only five variables are the same ).The gyroscope again is not present among the most important value. But it is a lot of variables from the accelerometer X components.
 
-The difference of  resulatats  could be explained by the fact that in dataset some variables give more information than others. It is well visible if to construct diagrams of variables with the different IGR value. For example we have selectes the two variables in two opposite cases: in case of high IGR the  points are  visually separated over against  low IGR case, which  is also carry  some portion of useful information.
+The difference of  resulatats  could be explained by the fact that in dataset some variables give more information than others. It is well visible if to construct diagrams of variables with the different IGR value. For example we have selectes the two variables (5 and 500) in two opposite cases; in case of high IGR the  points are  visually separated over against  low IGR case, which  is also carry  some portion of useful information.
 ![Fig. Example IGR = 0.88](assets/img/exmpl_igr_hight.png)
 ![Fig. Example IGR = 0.11](assets/img/exmpl_igr_low.png)
-Finally number of classes also plays some role in it, because  reaching the maximum accuracy in the one class, we can lose performance in another. This can be shown on the discrepancy matrices for two different sets of attributes with the same precision:
+Finally number of classes also plays some role in it, because  reaching the maximum accuracy in the one class, we can lose performance in another. This can be shown on the discrepancy matrices for two different sets of attributes with the same precision: for example,  in the first matrix, two first classes have less errors and three others classes more errors than in the seconf one.  
 
 
-**`Control: RF model (IGR 526 variables)`**
-
-```{r echo=F}
-
-#Having received the arranged list of important variables with IGR  we apply them for #RF and SVM: 
-if (switch_activity == 1){
-  .activityRFigr(vars)
-}  
-
-.printReference("data/conf_matrix(igr_val)RF.xlsx")
-
-#.printOverall("data/conf_matrix(igr_val)RF.xlsx")
- 
-
-```
-
-**`Control: SVM model (547  IGR variables)`**
-```{r echo=F}
-if (switch_activity == 1){
-  .activitySVMigr(vars)
-}
-  
-.printReference("data/conf_matrix(igr_val)SVM.xlsx")
-
-#.printOverall("data/conf_matrix(igr_val)SVM.xlsx")
-
-```
-
-
-**`Principal component analysis (PCA)`**
+**`Principal component analysis`**
+As we have deal with enough high dimensional data it would be really useful to applay Principal component analysis (PCA). The goal of PCA is to explain the most amount of variance with the lowest number of variables.  Collinear variables can be combined into underlying factors or principal components that are uncorrelated with one another.
+Another words, we can reduce dimensions by dropping the components which do not explain much of the variance. So in order to see if PCA could be useful, we applay it in RF and SVM models.  
+We include all of the variables in the PCA.
 ```{r echo=F}
 if ( switch_activity == 1 ){
   pca_train_data<-.activityPCA()
 }
   
 ```
+And after performing PCA there are 102 variables have been rest.
+
+Below  the  confusion matrix and  statistics for RF and SVM models are shown:
 
 **`RF with PCA data`**
 ```{r echo=F}
@@ -594,12 +583,30 @@ if ( switch_activity == 1 ){
 
 ```
 
-As it is shown in the tables, accuracy of SVM model is higher then RF.
+In both cases applying model on the reduced data gives us a worse model.
+Accuracy for RF model with PCA  on 5% lower than for RF model with full features set and for 2% lower in case of SVM. The training time was significant reduced for both models (see table).   
+
+```{r echo = F}
+  
+  perfomance <- read.xlsx( "data/performance.xlsx", sheetIndex=1, header=TRUE )
+  #perf[] <- data.frame()
+  #perf <- cbind(perf,perfomance[,4])
+  #perf <- cbind(perf,perfomance[,3]) 
+  perf <- perfomance[,3:4]
+
+  kable(t( perf ), digits=5, caption = "Time perfomance" )
+  
+```
+
+
 Above we demonstrated how to successfully perform human activity classification based on a simple feature extraction process of a smartphone time series. Two classifiers with varying computational costs and similar profiles of performance were utilised.
 
 **`Conclusion`**
 
-This test demonstrates that in case of human activity recognition SVM model works faster  and shows a little bit better accuracy than RF model. The lists of important variables by RF and IGR  raise the question of whether to use the gyroscope to improve recognition accuracy.   
+This test demonstrates that in case of human activity recognition SVM model shows a little bit better accuracy than RF model.
+The model training time in both cases is approximately the same.
+The lists of important variables by RF and IGR  raise the question of whether to use the gyroscope to improve recognition accuracy.  
+PCA could be usefull tools - in our test we  used only 18% of  variables with loss of accuracy of 2-5% and significantly reduced the time on 8-9 minutes.
 
 ### Food recognition
 Diet tracking is an important behavior change strategy for controlling obesity. However, manually recording foods eaten is tedious. Many diet tracking approaches have been proposed but have limitations. Recognizing food from photographs fails for complicated foods. Scanning food barcodes works but not all foods have barcodes. 
@@ -1375,10 +1382,12 @@ In this section  we used a  recently developed method, Combined Analysis of Epis
  
  -  BBS is not absolutement monogenetic, but oligogenic: 12 genes at least; more to be discovered;
  -  Recessive autosomic but also triallelic transmission (12/65 families with BBS mutation have another BBS mutation).  It means genetic epistasis;
- -   More heterogeneous than thought.
+ -  More heterogeneous than thought.
  
- The method uses regression on pairs of loci to detect interaction effects from each locus pair on each phenotype. It then combines model parameters across phenotypes to infer directed, QTL-to-QTL influences that replace the interaction effects on each phenotype. The result is a pair of directed coefficients modeling how the two loci influence each other’s activity, rather than how each pair independently affects each phenotype.
-
+The method uses regression on pairs of loci to detect interaction effects from each locus pair on each phenotype. It then combines the results of the linear regressions across phenotypes to interpret the direction of the interaction. This directional information is calculated through a reparametrization of the coefficients from the
+pairwise linear regressions. The result is a pair of directed coefficients
+describing how the two loci influence each other in terms of suppression or enhancement.
+ 
 
 ### Dataset
 We will analyze a dataset described in [9]. This dataset was established to find quantitative trait loci (QTL) for obesity and other risk factors of type II diabetes in a reciprocal back-cross of non-obese non-diabetic (NON/Lt) mice and diabetes-prone, New Zealand obese (NZO/HILt) mice. 
@@ -1438,7 +1447,17 @@ if (switch_cape == 1){
 ![Fig. Correlations between phenotypes](assets/img/corPheno.png)
 
 ### Singular value decomposition  of phenotype matrix
-Singular value decomposition (SVD) is a factorization method that decomposes the data into a set of mutually orthogonal "eigentraits" that are sorted according to variance explained [10].  One benefit of this process is that variants that are weakly correlated to several phenotypes due to common underlying processes may be strongly correlated to one of the eigentraits. This eigentrait captures the information of the underlying process, making strong main effects distributed between phenotypes easier to detect and identify as potential interaction loci and/or covariates.
+Prior to calculating the linear regression models, we decomposed
+the phenotypes via singular value decomposition (SVD) into their prin-
+cipal components, called eigentraits (ETs) [10]. This step decorrelates the
+phenotypes, reorganizing phenotypic signals into orthogonal, com-
+posite phenotypes. This procedure potentially concentrates genetic
+associations, in that variants with weak associations to multiple orig-
+inal phenotypes often exhibit strong association to one ET. Although
+the final CAPE-derived model will be recast in terms of the original
+phenotypes, this provides enhanced detection of candidate loci for
+interaction analysis.
+
 Before the selection of eigentraits, the eigentraits should be examined
 ```{r echo=F, fig.height=4.5}
 if (switch_cape == 1){
