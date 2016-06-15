@@ -1673,12 +1673,11 @@ dev.off()
 
 
 In this figure of the network, each chromosome is represented by a black bar and labeled with the chromosome number. Main effects are depicted in the gray
-circles outside the chromosome bars. Green segments represent significant positive main effects and there are not yellow segments which represent significant negative main effects. Interactions are denoted by arrows between chromosomal regions. The inner, middle and outer main effect circles show main effects for body_weight, glucose and insulin, respectively. 
-Interactions are represented by arrows between chromosomal segments. The chromosomal segment involved in the interaction is shown as a gray bar on the inside of the black
-chromosomal bar. Many subnetworks of individual modules can be seen as arrows linking common regions together. The largest module, for example comprises interactions between Chrs 1, 2, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14, 16, 17 and 18 with Chr 1 acting as the hub of the module. Another smaller one links Chrs 14 and 1,7, 12.
+circles outside the chromosome bars. Green segments represent significant positive main effects and there are not yellow segments which represent significant negative main effects. As it has been mentioned Interactions are denoted by arrows between chromosomal regions. The inner, middle and outer main effect circles show main effects for body_weight, glucose and insulin, respectively. 
+Many subnetworks of individual modules can be seen as arrows linking common regions together. The largest module, for example comprises interactions between Chrs 1, 2, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14, 16, 17 and 18 with Chr 1 acting as the hub of the module. Another smaller one links Chrs 14 and 1,7, 12.
 The modules also displayed different mixtures of positive and negative interactions.
 Some multinode modules contained both enhancing and suppressing interactions, while one
-other module contained only positive interactions. The latter module has a clear hub on Chr 1. This chromosome had a positive effects on body weight, glucose et insulin, which were enhanced through interactions with loci on six other chromosomes - Chrs 2, 9, 10, 11, 13, 16. Or Chr 18 had a positive effects on body weight, which was enchanced through interactions with loci on Chrs  6, 15.  
+other module contained only positive interactions. The first type of module has a clear hub on Chr 1. This chromosome had a positive effects on body weight, glucose et insulin, which were enhanced through interactions with loci on six other chromosomes - Chrs 2, 9, 10, 11, 13, 16 and were suppresed by Chrs 10 and 12. Or Chr 18 had a positive effects on body weight, which was enchanced through interactions with loci on Chrs  6, 15 ans was suppresed by Chr 2.  
 The interaction between Chr 1 and 12 is  is illustrative, because although both loci have a positive effects on body weight, their joint effect is less than additive.This suggests that one or both of the loci are suppressing the effect of the other. only the Chr 1 locus has an effect on insulin and this effect is independent of the Chromosome 12 locus. [to be continued]  
 
 ```{r echo=F, fig.height=6}
