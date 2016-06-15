@@ -535,7 +535,7 @@ if (switch_activity == 1){
 Maximum IGR value = 0.897, minimum = 0.
 As it is seen, IGR gives different set of important variables than RF ( only five variables are the same ).The gyroscope again is not present among the most important value. But it is a lot of variables from the accelerometer X components.
 
-The difference of  resulatats  could be explained by the fact that in dataset some variables give more information than others. It is well visible if to construct diagrams of variables with the different IGR value. For example we have selectes the two variables (5 and 500) in two opposite cases; in case of high IGR the  points are  visually separated over against  low IGR case, which  is also carry  some portion of useful information.
+The difference of  resulatats  could be explained by the fact that in dataset some variables give more information than others. It is well visible if to construct diagrams of variables with the different IGR value. For example we have selected the two variables (5 and 500) in two opposite cases; in case of high IGR the  points are  visually separated over against  low IGR case, which  is also carry  some portion of useful information.
 ![Fig. Example IGR = 0.88](assets/img/exmpl_igr_hight.png)
 ![Fig. Example IGR = 0.11](assets/img/exmpl_igr_low.png)
 Finally number of classes also plays some role in it, because  reaching the maximum accuracy in the one class, we can lose performance in another. This can be shown on the discrepancy matrices for two different sets of attributes with the same precision: for example,  in the first matrix, two first classes have less errors and three others classes more errors than in the seconf one.  
@@ -1372,7 +1372,7 @@ dev.off()
 }  
 ```
 **(to be continued)**
-[Fig. Region track](assets/img/GWASchr14TTC8.png)
+![Fig. Region track](assets/img/GWASchr14TTC8.png)
 
 ## Detecting epistasis and pleiotropy in case of obesity. (The mouse study)
 
@@ -1470,15 +1470,58 @@ if (switch_cape == 1){
 }
 ```
 ![Fig. The results of the singular value decomposition](assets/img/SVD.png)
-
+This figure demonstrate the contributions of each phenotype to each ET. Green squares indicate a positive contribution while yellow squares indicate a negative contribution. Gray bars show the percent variance accounted for by each ET.
 Here, the first eigentrait captures more than 70% of the variance in
-the three phenotypes. This eigentrait describes the processes by which body weight, glucose levels, and insulin levels all vary together. The second eigentrait captures nearly 20% of the variance in the phenotypes. It captures the processes through which glucose and body weight vary in opposite directions. This eigentrait may be important in distinguishing the genetic discordance between obesity and diabetes.
+the three phenotypes. This eigentrait describes the processes by which body weight, glucose levels, and insulin levels all vary together. The second eigentrait captures nearly 20% of the variance in the phenotypes. It captures the processes through which glucose and body weight vary in opposite directions. This eigentrait may be important in distinguishing the genetic discordance between obesity and diabetes.The third eigentrait describes the divergence of blood glucose and insulin levels and may represent a genetic link between glucose and body weight that is non-insulin dependent.
+
 
 ### Single-Variant Scan
 Once the eigentraits for the analysis have been selected, the single-locus scan is run to investigate how individual markers are associated with each eigentrait. This scan performs a linear regression at each marker.
 Single-Variant Scan can be used as pre-processing step for filtering variants and to choose those that will be incuded in the pair scan. It is useful, taking into account that  the number of possible variant pairs may be too large to test exhaustively in case the large data sets. And it can helps to avoid  obscuring interactions by  large main effects - variants with large main-effects can be used as covariates in the pair scan.
 The single-marker scan currently does not support markers on sex chromosomes. Because
 the X chromosome is hemizygous in males, sex differences in phenotype can lead to false associations, and markers on this chromosome require special consideration [39].
+
+#### Single-Locus Effects on Phenotypes
+We used linear regression to determine the association of each locus with each phenotype.
+
+```{r echo=F,  fig.height=15}
+if (switch_cape == 1){
+  obesity.singlescan <- singlescan(obesity.cross, n.perm = 100, 
+  covar = "mom", scan.what = "raw.traits", alpha = c(0.01, 0.05), 
+  verbose = FALSE, use.kinship = FALSE, overwrite.alert = FALSE,
+  run.parallel = FALSE, n.cores = 2)
+}  
+```
+The results of the single variant scan can be visualized:
+```{r echo=F }
+if (switch_cape == 1){
+  png("assets/img/singleScaneTraits.png")
+  plotSinglescan(data.obj = obesity.cross, singlescan.obj = obesity.singlescan, 
+  mark.chr = TRUE, mark.covar = FALSE,  plot.type='l', standardized=TRUE)
+  dev.off()
+}  
+
+```
+
+![Fig. Single-locus associations with phenotypes](assets/img/singleScaneTraits.png)
+
+For better comparison of effects between phenotypes we present heatmap which demonstrate  the effects  of each regression on each phenotype:
+```{r echo=F, fig.height = 3}
+if (switch_cape == 1){
+  png("assets/img/singlescanTraitsHeat.png")
+  plotSinglescan.heat(data.obj = obesity.cross, singlescan.obj = obesity.singlescan )
+  dev.off()
+}
+#
+```
+
+![Fig. Heatmap of Single-locus associations with phenotypes](assets/img/singlescanTraitsHeat.png)
+
+Each of the phenotypes had multiple associated QTL, and these QTL often overlapped across multiple phenotypes. For example, body weight and glucose shared a large QTL on Chr 15, and also they showed overlapping QTL on Chr 1. These overlapping QTL indicate the possibility of common genetic factors underlying multiple phenotypes, such that information can be combined across multiple phenotypes to gain information about individual loci. Unique QTL were also observed, providing non-redundant information to discern genetic factors with phenotypic specificity.
+
+
+#### Single-Locus Effects on Eigentraits 
+Above we  decomposed the normalized, mean-centered phenotypes into eigentraits and described them. As it is seen on figure below single-locus associations with each ET detected multiple QTL:
 
 ```{r echo=F}
 if (switch_cape == 1){
@@ -1493,33 +1536,37 @@ The results of the single variant scan can be visualized
 if (switch_cape == 1){
   png("assets/img/singleScane.png")
   plotSinglescan(data.obj = obesity.cross, singlescan.obj = obesity.singlescan, 
-  mark.chr = TRUE, mark.covar = FALSE)
+  mark.chr = TRUE, mark.covar = FALSE,  plot.type='h', standardized=TRUE)
   dev.off()
 }  
+
+
 ```
-![Fig. The results of the single-locus scan ](assets/img/singleScane.png)
+![Fig. Single-locus scan with eigentraits ](assets/img/singleScane.png)
 
 In this figure the t-statistic  of each marker is plotted as a vertical line. Results for both eigentraits are shown here as ET1 and ET2, and chromosome numbers are written along the x axis. In this example we will not filter the markers and use all markers in the pairwise scan.
+Since ET are linear combinations of traits, each QTL indicates a potentially pleiotropic association with varying effect strengths on each trait. For example, data for body weight and glucose had overlapping QTL on Chr 1. These phenotypes also contributed substantially to ET1, and there was a corresponding significant QTL for ET1 on Chr 1 representing the common QTL.
 
 
 ### Pairwise Scan
 The purpose of the pairwise scan is to find interactions, or epistasis, between variants. The epistatic models are then combined across phenotypes or eigentraits to infer a network that takes data from all eigentraits into account.
-But before running the pair scan, it is important that we reduce the genetic matrix to only markers that are linearly independent of one another. We need calculate the correlation between all pairs of markers and  in case of founding pair perfectly
-correlated, the first marker is removed. 
+But before running the pair scan, it is important that we reduce the genetic matrix to only markers that are linearly independent of one another. Some of the markers used were tightly linked to one another. So we need calculate the correlation between all pairs of markers. High Pearson correlation between markers indicates that the individual markers supply redundant information and can lead to false-positive interactions. To address this problem, we will filter the marker pairs by removing all highly correlated pairs from consideration using a Pearson correlation cutoff of r ≥ 0.75. 
+
 ```{r echo=F, fig.height=6}
 if (switch_cape == 1){
   obesity.cross <- select.markers.for.pairscan(data.obj = obesity.cross, 
   singlescan.obj = obesity.singlescan)
   png("assets/img/singleScanSelect.png")
   plotSinglescan(data.obj = obesity.cross, singlescan.obj = obesity.singlescan, 
-  mark.chr = TRUE, show.rejected.markers = TRUE,  standardized = TRUE)
+  mark.chr = TRUE, show.rejected.markers = TRUE,  standardized = TRUE, plot.type='h')
   dev.off()
 }  
 ```
-![Fig. The results of the  markers selected for pairscan](assets/img/singleScane.png)
+![Fig. The results of the  markers selected for pairscan](assets/img/singleScanSelect.png)
 
-On figure we can see the locations of discarded markers, which markers have been selected for the pair scan and which have been rejected.
+In figure above we can see the locations of discarded markers, which markers have been selected for the pair scan and which have been rejected.  A total of 2 marker  pairs (56, 57) were eliminated in this filtering step.
 After ensuring that all markers are linearly independent and thresholded satisfactorily, the pairscan can be run.
+In fact pairscans are performed for each ET by multivariate linear regression, with an intercept, covariates, main effects, and interaction term for each pair of markers. Interaction (epistasis) coefficients from each ET can be plotted as shown in the following pdf-file: 
 ```{r  echo=F }
 #fig=F, print=F, echo=F}
 if (switch_cape == 1){
@@ -1532,6 +1579,7 @@ if (switch_cape == 1){
   neg.col = "yellow", pos.col = "green", 
   col.pal = "light", verbose = FALSE)
 }
+
 #cat('<iframe src="Pairscan-Regression.pdf" width="1200"" height="560"> </iframe>')
 #![](Pairscan_Regression.pdf)
 #\begin{center}
@@ -1539,33 +1587,41 @@ if (switch_cape == 1){
 #\end{center}
 #[Pairscan-Regression](Pairscan-Regression.pdf)
 #[Fig. Pairscan-Regression](data/Pairscan-Regression.pdf)
+#\includegraphics{assets/img/Pairscan-Regression.pdf}
 ```
+
 ![Fig. The results of the pair scan](assets/img/Pairscan-Regression.pdf)
 
-\includegraphics{assets/img/Pairscan-Regression.pdf}
+Click [here](assets/img/Pairscan-Regression.pdf) to download the  big picture of the results of the pairwise scan.
 
-This plot shows the resulting β/σ for each pair of markers for ET1. Gray and white bars show the boundaries of the chromosomes.
-**(to be continued)**
+This plot shows the resulting t-statistic for each pair of markers for ET1. Symmetric matrices of all marker pair interaction terms are displayed in matrix form, with gray and white bars along the axes to mark chromosome boundaries.Gray and white bars show the boundaries of the chromosomes.
+82 markers were selected for the pairscan. This makes 3321 possible pairs.
 
 ### Detection of Interactions
+From  the pairwise the coefficients regression are then reparametrized to give direct influence coefficients, describing how each marker either enhances or suppresses the activity of each other marker. First two new parameters (δ 1 and δ 2 ) are defined in
+terms of the interaction coefficients from the pairwise regression. δ 1
+can be thought of as the additional genetic activity of the variant near
+marker 1 when the variant near marker 2 is present. The δ terms are independent of phenotype and together completely describe the interaction term. They can be interpreted as the extent to which each marker influences the effect of the other on the phenotypes. For example, a negative δ 2 indicates that the presence of variant 2
+suppresses the effect of variant 1 on the ETs. The δ terms are related
+to the main effects and interaction effects.
+In the picture below we present:
 
-Below we present plot of Variant influences, which is useful for identifying patterns in variant interactions and shows all significant influences between variants and between variants and phenotypes.
+ -  Main effects: standardized main effects (t-statistic) of each marker on each phenotype. Only significant main effects (p ≤ 0.05) are shown in color. Positive main effects are shown in green and negative main effects are shown in yellow. Here QTL main effects as well as main effects of mom are shown; 
+  - Interaction effects: standardized effect sizes of interactions between genetic markers and between genetic markers and mom. Each interaction is directed and includes a source genetic marker and a target genetic marker. The interactions are read such that the row corresponds to the source marker and the column corresponds to the target marker. Significant interactions (p ≤ 0.05) are shown in yellow (suppressing) and green (enhancing). Gray regions on the diagonal indicate marker pairs that were not tested due to linkage disequilibrium (r > 0.5). 
+
 ```{r echo=F}
 if (switch_cape == 1){
+  
   obesity.cross <- error.prop(data.obj = obesity.cross, 
-  pairscan.obj = obesity.pairscan, 
-  perm = FALSE, verbose = FALSE, n.cores = 2)
-  obesity.cross <- error.prop(data.obj = obesity.cross, 
-  pairscan.obj = obesity.pairscan, 
-  perm = TRUE, verbose = FALSE, n.cores = 2)
-  obesity.cross <- calc.p(data.obj = obesity.cross, 
-  pairscan.obj = obesity.pairscan, pval.correction = "fdr",
-  n.cores = 2)
+  pairscan.obj = obesity.pairscan,   perm = FALSE, verbose = FALSE, n.cores = 2)
+  obesity.cross <- error.prop(data.obj = obesity.cross,   pairscan.obj = obesity.pairscan,   perm = TRUE, verbose = FALSE, n.cores = 2)
+  obesity.cross <- calc.p(data.obj = obesity.cross,   pairscan.obj = obesity.pairscan, pval.correction = "fdr",  n.cores = 2)
   obesity.cross <- direct.influence(data.obj = obesity.cross, 
   pairscan.obj = obesity.pairscan, pval.correction = "fdr")
   png("assets/img/variantInfluences.png")
   plotVariantInfluences(obesity.cross, p.or.q = 0.05,  
-  standardize = TRUE, not.tested.col = "lightgray", neg.col = "yellow", pos.col = "green",pheno.width = 8)
+  standardize = TRUE, not.tested.col = "lightgray", pheno.width = 8,
+  neg.col = "yellow", pos.col = "green") #,pheno.width = 8)
   dev.off()
   writeVariantInfluences(obesity.cross, p.or.q = 0.05, filename = "data/Significant.Influences.txt")
 }  
@@ -1579,26 +1635,51 @@ As an example, present first 7 rows of the table of significant influences:
 ```{r echo=F}
 varInfluences <- read.table("data/Significant.Influences.txt", header=T, sep=",")
 h_vInf <- head(varInfluences, 7)
-kable(h_vInf, digites = 10)
+kable(h_vInf, digites = 5)
 
 ```
 
 
 ### Results
 The plot of network is demonstrated below. It presents the chromosomes in a circle and shows interactions as arrows between regions on chromosomes:
+
 ```{r echo=F, fig.height=6}
 if (switch_cape == 1){
-  obesity.cross <- get.network(obesity.cross, p.or.q = 0.05, 
-  collapse.linked.markers = TRUE, standardize = FALSE)
-  png("assets/img/network.png")
-  plotNetwork(obesity.cross, collapsed.net = TRUE, positive.col = "green", negative.col = "yellow")
-  dev.off()
-}  
+#  obesity.cross <- get.network(obesity.cross, p.or.q = 0.05, 
+#collapse.linked.markers = TRUE, standardize = FALSE)
+#  png("assets/img/network.png")
+#  plotNetwork(obesity.cross, collapsed.net = TRUE, positive.col = "green", #negative.col = "yellow")
+
+#  dev.off()
+
+png("assets/img/networkCollapsed.png")
+obesity.cross <- get.network(obesity.cross, p.or.q = 0.05, 
+collapse.linked.markers = TRUE, standardize = FALSE)
+plotNetwork(obesity.cross, collapsed.net = TRUE,  positive.col = "green", negative.col = "yellow")
+dev.off()
+#png("assets/img/networkFull.png")
+#obesity.cross <- get.network(obesity.cross, p.or.q = 0.05, 
+#collapse.linked.markers = FALSE, standardize = TRUE)
+#plotNetwork(obesity.cross, collapsed.net = FALSE,  positive.col = "green", #negative.col = "yellow")
+#dev.off()
+
+
+}
+
+#![Fig. Plot Network](assets/img/networkFull.png)  
+
 ```
-![Fig. Plot Network](assets/img/network.png)
+![Fig. Plot Network](assets/img/networkCollapsed.png)
+
 
 In this figure of the network, each chromosome is represented by a black bar and labeled with the chromosome number. Main effects are depicted in the gray
-circles outside the chromosome bars. Green segments represent significant positive main effects and yellow segments represent significant negative main effects. Interactions are denoted by arrows between chromosomal regions.
+circles outside the chromosome bars. Green segments represent significant positive main effects and there are not yellow segments which represent significant negative main effects. Interactions are denoted by arrows between chromosomal regions. The inner, middle and outer main effect circles show main effects for body_weight, glucose and insulin, respectively. 
+Interactions are represented by arrows between chromosomal segments. The chromosomal segment involved in the interaction is shown as a gray bar on the inside of the black
+chromosomal bar. Many subnetworks of individual modules can be seen as arrows linking common regions together. The largest module, for example comprises interactions between Chrs 1, 2, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14, 16, 17 and 18 with Chr 1 acting as the hub of the module. Another smaller one links Chrs 14 and 1,7, 12.
+The modules also displayed different mixtures of positive and negative interactions.
+Some multinode modules contained both enhancing and suppressing interactions, while one
+other module contained only positive interactions. The latter module has a clear hub on Chr 1. This chromosome had a positive effects on body weight, glucose et insulin, which were enhanced through interactions with loci on six other chromosomes - Chrs 2, 9, 10, 11, 13, 16. Or Chr 18 had a positive effects on body weight, which was enchanced through interactions with loci on Chrs  6, 15.  
+The interaction between Chr 1 and 12 is  is illustrative, because although both loci have a positive effects on body weight, their joint effect is less than additive.This suggests that one or both of the loci are suppressing the effect of the other. only the Chr 1 locus has an effect on insulin and this effect is independent of the Chromosome 12 locus. [to be continued]  
 
 ```{r echo=F, fig.height=6}
 #obesity.cross <- get.network(obesity.cross, p.or.q = 0.05, 
