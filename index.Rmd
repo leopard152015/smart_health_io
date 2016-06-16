@@ -96,12 +96,6 @@ Unfortunately, existing technologies in the area of physical activity are mostly
 One of the challenges for this project will be to define technologies (system of multi devices and set of algorithms) that can measure and analyze many physical parameters (such as galvanic skin response. blood oxygen saturation, calorie intake, blood pressure, blood glucose) and that are adapted for use by patients who have difficulty maintaining a healthy weight and minimum levels of physical activity every day.
 As we will be collecting human patient-related data, safety issues need to be taken into account to avoid any risk to life, as well as security and privacy protection issues for the data collected from a WBAN, either while stored inside the WBAN or during their transmission outside of the WBAN. Controlling congestion and security is a major unsolved concern, with challenges resulting from stringent resource constraints of WBAN devices, and the high demand for both security/privacy and practicality/usability. In this work, we will address two important data security issues: secure and dependable distributed data storage, and fine-grained distributed data access control for sensitive and private patient medical data, as well as considering the diverse practical issues that need to be taken into account while fulfilling the security and privacy requirements. 
 
-### Energy expenditure estimation
-
-As energy expenditure (EE) estimation present the key aspect in obesity determination,
-this section we dedicate to EE model combining accelerometer, physiological data from wearable sensors and EE using Bayesian models and hierarchical regression. 
-EE (Calories burnt) make up half of the energy balance equation: 
-**(to be continued)**
 
 
 ### Health trackers selection
@@ -283,6 +277,50 @@ This is full list of possible scopes for Jawbone U3:
 Developers have not access Bluetooth or the raw sensors on the devices directly. All information are delived  after processing, handling and transformations from the cloud via  REST API. The only advanced sensor data available through the UP API is Resting Heart Rate. This provides one value per day, captured when the user wakes up while wearing the band, and is only available from users that have an UP3 band. However they are currently exploring opportunities to unlock access to more sensor data in the future, but do not have a set timeline yet.
 The information  about there based step-classification concept is described in this article [https://jawbone.com/blog/classifying-steps-machine-learning/].  
 We tested data access via API and confirmed the comfortability of system. 
+
+### Energy expenditure estimation
+
+As energy expenditure (EE) estimation present the key aspect in obesity determination, this section we dedicate to consept of EE measurement. 
+We quickly  investigate existing problems of EE estimation. Then  the relation between accelerometer, physiological data and EE using Bayesian models and hierarchical regression will be establised.
+And at the end we propose models which will be able to increase accuracy level and to take into account variability in physiological signals between individuals applaying method of personalization. 
+
+**`Definition EE`**
+
+EE (Calories burnt) make up half of the energy balance equation: 
+*Energy Balance = Energy Expenditure - Energy Intake*.
+We can determine three elements of EE:
+
+ -  Basal metabolic rate (Energy required to maintain body functions - 60-75% of TEE)
+ -  Diet Induced Thermogenesis (Energy used in digestion - 10% of TEE)
+ -  Physical Activity (15-30% of total TEE)
+
+According our method (see section "Method description") we will take deal with AEE.
+
+**`Problems of EE estimation`**
+
+We have already talked that many HT in the consumer market  estimate EE by regression models using accelerometer data, HR, or a combination of the two, across all activities with  including anthropometric characteristics in the equation, given the relation between body size and EE. Some of them are claiming higher accuracy due to a combination of accelerometer, gyroscope and physiological data (e.g. Basis or the Apple watch).  But the resultats is also not nearly enought, partly because these devices are simply combining multiple signals without personalization. As it has been explained in section "Method description", the personalization of data is very important and  helping to avoid suboptimal results.
+It can be demonstrated very easily in the following example: we want to estimate EE from HR  and there are two participants with similar anthropometric characteristics (e.g. similar body weight), but different sport level in our experiment; HR differs during moderate to vigorous activities explaining by the participant's fitness level. It means we can measure EE from HR  if only  HR is properly normalized.
+However, there is a strong link between HR, oxygen consumption and EE, which motivates the use of HR data for EE estimation. Let's look at example: If we use only accelerometer, for which the rationale is that body motion close to the body's center of mass, we will see the wrong  relation between accelerometer and EE for the participant over different activities. The relation gets very weak for non-weight-bearing some types of activities, such as biking, while it's reasonably good for walking and running. 
+So we can denote two points:
+
+ -  Accelerometer data alone is unable to fit all activities, biking is modeled as a sedentary activity, due to the lack of motion, and therefore results are inaccurate for both high intensity activities without body motion (i.e. biking) and sedentary activities (lying, sedentary behavior);
+ - HR is a very bad predictor for household activities, and could be shows increased value in low intensity activity after high intensity activity for people without regular sports training.
+ 
+ **`Bayesian hierarchical models`**
+
+Bayesian hierarchical models  fit very well EE estimation ....**(to be continued)**
+
+
+
+**`Conclusion`**
+
+ - Presence of HR sensor in HT does not meen more accuracy. 
+ - Better using the accelerometer which worn on the chest, because results would be much worse at the wrist, due to the lack of agreement between whole body motion and wrist movement;
+ - Combining physiological and accelerometer data gives the best results;
+ - Method of personalization  by normalizing physiological data for individual improves accuracy for moderate and vigorous activities.  
+ - Hierarchical Bayesian models propose a suitable solution to the problem of physiological signals normalization, by modeling the relation between HR and fitness, without the need for explicit HR normalization. 
+ 
+**(to be continued)**
 
 
 ### Activity recognition
@@ -603,10 +641,10 @@ Above we demonstrated how to successfully perform human activity classification 
 
 **`Conclusion`**
 
-This test demonstrates that in case of human activity recognition SVM model shows a little bit better accuracy than RF model.
-The model training time in both cases is approximately the same.
-The lists of important variables by RF and IGR  raise the question of whether to use the gyroscope to improve recognition accuracy.  
-PCA could be usefull tools - in our test we  used only 18% of  variables with loss of accuracy of 2-5% and significantly reduced the time on 8-9 minutes.
+ -  This test demonstrates that in case of human activity recognition SVM model shows a little bit better accuracy than RF model;
+ -  The model training time in both cases is approximately the same;
+ -  **The lists of important variables by RF and IGR  raise the question of whether to use the gyroscope to improve recognition accuracy;**  
+ -  PCA could be usefull tools - in our test we  used only 18% of  variables with loss of accuracy of 2-5% and significantly reduced the time on 8-9 minutes.
 
 ### Food recognition
 Diet tracking is an important behavior change strategy for controlling obesity. However, manually recording foods eaten is tedious. Many diet tracking approaches have been proposed but have limitations. Recognizing food from photographs fails for complicated foods. Scanning food barcodes works but not all foods have barcodes. 
@@ -1400,6 +1438,7 @@ d<-data(obesity)
 d<-data(obesity.cross)
 print(str(obesity.cross))
 switch_cape <- 0
+
 ```
 
 ### Examining the Data
@@ -1678,12 +1717,35 @@ Many subnetworks of individual modules can be seen as arrows linking common regi
 The modules also displayed different mixtures of positive and negative interactions.
 Some multinode modules contained both enhancing and suppressing interactions, while one
 other module contained only positive interactions. The first type of module has a clear hub on Chr 1. This chromosome had a positive effects on body weight, glucose et insulin, which were enhanced through interactions with loci on six other chromosomes - Chrs 2, 9, 10, 11, 13, 16 and were suppresed by Chrs 10 and 12. Or Chr 18 had a positive effects on body weight, which was enchanced through interactions with loci on Chrs  6, 15 ans was suppresed by Chr 2.  
-The interaction between Chr 1 and 12 is  is illustrative, because although both loci have a positive effects on body weight, their joint effect is less than additive.This suggests that one or both of the loci are suppressing the effect of the other. only the Chr 1 locus has an effect on insulin and this effect is independent of the Chromosome 12 locus. [to be continued]  
+The interaction between Chr 1 and 12 is  is illustrative, because although both loci have a positive effects on body weight, but their joint effect is less than additive.This suggests that one or both of the loci are suppressing the effect of the other. The nature of this interactions can be seen by examining effect plots for these interactions. For example interaction between the Chr 1 and the Chr 8, the C3H allele on Chr 8-1 has a
+small positive effect in animals with the B6J background on
+Chr 11-1.
+
+```{r echo=F}
+
+```
+
+Only the Chr 1 locus has an effect on insulin and this effect is independent of the Chr 12 locus.    
 
 ```{r echo=F, fig.height=6}
 #obesity.cross <- get.network(obesity.cross, p.or.q = 0.05, 
 #collapse.linked.markers = FALSE, standardize = TRUE)
 #plotNetwork(obesity.cross, collapsed.net = FALSE)
+
+library(qtl)
+#data(hyper)
+#hyper <- sim.geno(obesity.cross, step=2, n.draws=16, error.prob=0.01)
+#effectplot(hyper, pheno.col = 1, mname1 = "D1Mit334")
+#effectplot(hyper, pheno.col = 1, mname1 = "D4Mit164")
+#markers <- find.marker(hyper, chr = c(6,15), pos = c(70,20))
+#effectplot(hyper, pheno.col = 1,
+#           mname1 = markers[1], mname2 = markers[2])
+#effectplot(hyper, pheno.col = 1,
+#           mname1 = markers[2], mname2 = markers[1])
+## Strip plot of data (phenotype by genotype).
+#plot.pxg(hyper, "D13Mit54")
+#plot.pxg(hyper, "D4Mit164")
+#plot.pxg(hyper, markers)
 ```
 
 # WBAN data security and privacy aspects 
