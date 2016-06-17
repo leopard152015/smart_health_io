@@ -1717,9 +1717,7 @@ Many subnetworks of individual modules can be seen as arrows linking common regi
 The modules also displayed different mixtures of positive and negative interactions.
 Some multinode modules contained both enhancing and suppressing interactions, while one
 other module contained only positive interactions. The first type of module has a clear hub on Chr 1. This chromosome had a positive effects on body weight, glucose et insulin, which were enhanced through interactions with loci on six other chromosomes - Chrs 2, 9, 10, 11, 13, 16 and were suppresed by Chrs 10 and 12. Or Chr 18 had a positive effects on body weight, which was enchanced through interactions with loci on Chrs  6, 15 ans was suppresed by Chr 2.  
-The interaction between Chr 1 and 12 is  is illustrative, because although both loci have a positive effects on body weight, but their joint effect is less than additive.This suggests that one or both of the loci are suppressing the effect of the other. The nature of this interactions can be seen by examining effect plots for these interactions. For example interaction between the Chr 1 and the Chr 8, the C3H allele on Chr 8-1 has a
-small positive effect in animals with the B6J background on
-Chr 11-1.
+The interaction between Chr 1 and 12 is  is illustrative, because although both loci have a positive effects on body weight, but their joint effect is less than additive.This suggests that one or both of the loci are suppressing the effect of the other. The nature of this interactions can be seen by examining effect plots for these interactions. [to be countinued]
 
 ```{r echo=F}
 
