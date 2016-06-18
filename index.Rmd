@@ -158,10 +158,10 @@ DT::saveWidget(dynamic_table, 'list_trackers.html')
 How can we know which one is the best?
 Various HTs have been tested and validated for field-based research in both healthy and chronically diseased populations [21]. There are many studies about the validity of energy consumption algorithms embedded in different devices [22] of medical area rather than  fitness trackers [26]. According [26] the resultats in 2014  of  energy expenditure estimation during a 69-minute protocol were following:  the mean absolute percent error values performed 9.3%, 10.1%, 10.4%, 12.2%, 12.6%, 12.8%, 13.0%, and 23.5% for the BodyMedia FIT, Fitbit Zip, Fitbit One, Jawbone Up, ActiGraph, DirectLife, NikeFuel Band, and Basis B1 Band, respectively.  
 
-The aim of this section was to compare some of the most suitable for our case of study   commercially available activity monitors in terms of variety of functions and  accuracy of mesurement:
+The aim of this section was to compare four of the most suitable for our case of study   commercially available activity monitors in terms of variety of functions and  accuracy of mesurement:
 
 [GoBe](http://healbe.com/us/) and [AngelSensor](http://angelsensor.com/) are Startups.
-[Jawbone UP24/UP3](https://jawbone.com) are two of the most popular fitness trackers in the world.   
+[Jawbone UP24/UP3](https://jawbone.com) and [Microsoft Band 2](https://microsoftband.com/)  are two of the most popular fitness trackers in the world.   
 
 All of these gadgets have three things in common:
 
@@ -257,7 +257,7 @@ Concerning accelerometer data, it seems useable. As we had not enought time to c
 </div>
 
 In my informal testing (during several months) Jawbone UP 24 handles burned calories and steps count quite well (sometimes there are +/- 10 % of steps).It provides REST API to collect list of parameters: steps, distance, burned calories, sleep (see below parameters for new UP 3 version). Sleep duration is measured well (but by accelerometer i.e. number of hours in horizontal position), so sleep quality is not accurate, but anyway it attempts to give you additional information such as how heavy or light users sleep was, and how long  waking periods were. And this is all that current version provides. In 3.0 version there is also heart rate parameter.
-Concerning usability of current applications - it is user-frendly and also allows users to log  food consumption to help with their dietary goals.
+Concerning usability of current applications - it is user-friendly and also allows users to log  food consumption to help with their dietary goals.
 The user can set the device to vibrate under certain circumstances. A good option might be to have it vibrate after users haven’t moved for a certain period of time.
 Let's look at the approache of data gathering that Jawbone API proposes. API discription can be found [here](https://jawbone.com/up/developer). 
 This is full list of possible scopes for Jawbone U3:
@@ -278,9 +278,14 @@ Developers have not access Bluetooth or the raw sensors on the devices directly.
 The information  about there based step-classification concept is described in this article [https://jawbone.com/blog/classifying-steps-machine-learning/].  
 We tested data access via API and confirmed the comfortability of system. 
 
+#### Microsoft Band 2
+This HT was not tested, but it it deserves attention and may be present the best desition. The Microsoft Band is a commercial product available to the public without any delays and problems. It features big number of important sensors: optical heart rate sensor, 3-axis accelerometer/gyrometer, ambient light sensor, UV sensor, capacitive sensor, galvanic skin response, baromete, haptic vibration motor, microphone, GPS. But the big positive point is that Microsoft has provided a SDK that allows access of the band’s sensor readings. The band communicates via Bluetooth to a synchronized smart phone. 
+So it can present a good solution as it takes access to sensors data like Angel Sensor and has user-friendly application like Jawbone, which is also important for motivating. 
+But the price is higher approximately on 100$. 
+
 ### Energy expenditure estimation
 
-As energy expenditure (EE) estimation present the key aspect in obesity determination, this section we dedicate to consept of EE measurement. 
+Using parameters from HT we can measure and control the physical parameters, intencity of activity  and calories burnt. And as energy expenditure (EE) estimation present the key aspect in obesity determination, this section we dedicate to consept of EE measurement. 
 We quickly  investigate existing problems of EE estimation. Then  the relation between accelerometer, physiological data and EE using Bayesian models and hierarchical regression will be establised.
 And at the end we propose models which will be able to increase accuracy level and to take into account variability in physiological signals between individuals applaying method of personalization. 
 
@@ -296,31 +301,50 @@ We can determine three elements of EE:
 
 According our method (see section "Method description") we will take deal with AEE.
 
+**`How we can measure EE`**
+One of the most standard and  practical method of estimate EE is indirect calorimetry. It  analyzes inhale and exhale gases concentration and the rate  of  oxygen  consumption   (VO2,   mL/min)  is  used   as  the representation  of   energy expenditure according Weir's equation:  *EE=3.9×VO2+1.1×VCO2*.
+There are a couple of portable indirect calorimeters on the market, like AeroSport TEEM 100 Metabolic Analysis System,  but the participant must use a facial mask or mouthpiece during all data acquisition.
+
+
+**`Dataset`**
+
+
 **`Problems of EE estimation`**
 
 We have already talked that many HT in the consumer market  estimate EE by regression models using accelerometer data, HR, or a combination of the two, across all activities with  including anthropometric characteristics in the equation, given the relation between body size and EE. Some of them are claiming higher accuracy due to a combination of accelerometer, gyroscope and physiological data (e.g. Basis or the Apple watch).  But the resultats is also not nearly enought, partly because these devices are simply combining multiple signals without personalization. As it has been explained in section "Method description", the personalization of data is very important and  helping to avoid suboptimal results.
 It can be demonstrated very easily in the following example: we want to estimate EE from HR  and there are two participants with similar anthropometric characteristics (e.g. similar body weight), but different sport level in our experiment; HR differs during moderate to vigorous activities explaining by the participant's fitness level. It means we can measure EE from HR  if only  HR is properly normalized.
-However, there is a strong link between HR, oxygen consumption and EE, which motivates the use of HR data for EE estimation. Let's look at example: If we use only accelerometer, for which the rationale is that body motion close to the body's center of mass, we will see the wrong  relation between accelerometer and EE for the participant over different activities. The relation gets very weak for non-weight-bearing some types of activities, such as biking, while it's reasonably good for walking and running. 
+However, there is a strong link between HR, oxygen consumption and EE, which motivates the use of HR data for EE estimation. Let's look at example: If we use only accelerometer, for which the rationale is that body motion close to the body's center of mass, we will see the wrong  relation between accelerometer and EE for the participant over different activities. Single regression models are unable to ﬁt all the activities,since the slope and intercept of the regression model changebased on the activity performed while data is collected [40]. So  the relation gets very weak for non-weight-bearing some types of activities, such as biking, while it's reasonably good for walking and running. 
 So we can denote two points:
 
  -  Accelerometer data alone is unable to fit all activities, biking is modeled as a sedentary activity, due to the lack of motion, and therefore results are inaccurate for both high intensity activities without body motion (i.e. biking) and sedentary activities (lying, sedentary behavior);
- - HR is a very bad predictor for household activities, and could be shows increased value in low intensity activity after high intensity activity for people without regular sports training.
+ - HR  could show increased value in low intensity activity after high intensity activity for people without regular sports training.
+ 
+ 
  
  **`Bayesian hierarchical models`**
 
-Bayesian hierarchical models  fit very well EE estimation ....**(to be continued)**
+Bayesian hierarchical approach fit very well EE estimation  since parameters are naturally interposed (belong to different levels). For example in the dataset we have anthropometric parameters at the higher (person) level, such as weight, age, etc., and at the same time we have many physiological data and reference EE. There are also other clusterings in the dataset. Some of them non-interposed,  for example the different activities performed.
+
+In a hierarchical model features at the lower level are formed by features at the higher level,  this means that anthropometric data impacts the relation between accelerometer data and EE in different people. So we have two levels - individual level and group level.  Without going into too many details, we build a model, where the matrix of individual level parameters  can either include accelerometer data, HR data or both. As a high level we use following  body weight only, since the age range of our dataset is pretty small. 
+
+
+**(to be continued)**
+```{r echo=F}
+#We will evaluate model using following techniq: leaving one subject out cross validation, building models #using data from all participant execpt one and then validating models using the remaining participant.
+#This procedure is repeated 9 times (number of participants) and results are averaged. 
+
+#As performance metric for EE estimation, Root Mean Square Error (RMSE) will be used. EE will be #considered as non-normalized values in kcal/min and body weight wiil be included as a predictor for #weight bearing activities. 
+```
 
 
 
 **`Conclusion`**
 
- - Presence of HR sensor in HT does not meen more accuracy. 
+ - Presence of HR sensor in HT does not meen more accuracy. The approach of estimation is important. 
  - Better using the accelerometer which worn on the chest, because results would be much worse at the wrist, due to the lack of agreement between whole body motion and wrist movement;
- - Combining physiological and accelerometer data gives the best results;
+ - Combining physiological and accelerometer (+gyroscope see section Activity recognition) data gives the best results;
  - Method of personalization  by normalizing physiological data for individual improves accuracy for moderate and vigorous activities.  
  - Hierarchical Bayesian models propose a suitable solution to the problem of physiological signals normalization, by modeling the relation between HR and fitness, without the need for explicit HR normalization. 
- 
-**(to be continued)**
 
 
 ### Activity recognition
@@ -637,14 +661,19 @@ Accuracy for RF model with PCA  on 5% lower than for RF model with full features
 ```
 
 
-Above we demonstrated how to successfully perform human activity classification based on a simple feature extraction process of a smartphone time series. Two classifiers with varying computational costs and similar profiles of performance were utilised.
+Above we demonstrated how  successfully perform human activity classification based on a simple feature extraction process of a smartphone time series. Two classifiers (SVM and RF) with varying computational costs and similar profiles of performance were utilised. 
+The lists of important variables by RF and IGR  raise the question of whether to use the gyroscope to improve recognition accuracy. But it fact absence of gyroscope data among important variable can be explain.  Among  accelerometer   features  using  X-axis  acceleration  showed  the  next  lowest  
+prediction  error because  X-axis  was   aligned  with  the  direction  of  forward  movement. And in context of simle activity recognition it is one of the most affecting features. But from physical point of view, due to gyroscopes only  capturing dynamic rotational movement free from   gravitational  bias, using gyroscope  features  in  Y   and  Z   axes  have to show  lower  errors  than  
+corresponding acceleration Y  and Z axes. For achievement higher accuracy and reliably recognize using stairs and rotations, we need to applay more sophisticated system of activitty recognition, which requied combining accelerometer and gyroscope information for reduceing prediction errors.
+
+
 
 **`Conclusion`**
 
- -  This test demonstrates that in case of human activity recognition SVM model shows a little bit better accuracy than RF model;
+ -  This test demonstrates that in case of simple human activity recognition SVM model shows a little bit better accuracy than RF model;
  -  The model training time in both cases is approximately the same;
- -  **The lists of important variables by RF and IGR  raise the question of whether to use the gyroscope to improve recognition accuracy;**  
  -  PCA could be usefull tools - in our test we  used only 18% of  variables with loss of accuracy of 2-5% and significantly reduced the time on 8-9 minutes.
+ -  For increasing accuracy we have to recognition complex activities which are not as repetitive as simple activities and may involve various hand gestures. It seems to  combining accelerometer and gyroscope information helps to reduceing prediction errors but required developing more complex algorithms.   
 
 ### Food recognition
 Diet tracking is an important behavior change strategy for controlling obesity. However, manually recording foods eaten is tedious. Many diet tracking approaches have been proposed but have limitations. Recognizing food from photographs fails for complicated foods. Scanning food barcodes works but not all foods have barcodes. 
@@ -1827,7 +1856,7 @@ say?” Journal of Experimental Education, vol. 71, no. 1, pp. 83–92, 2002.
 25. Furlanetto KC, Bisca GW, Oldemberg N, Sant’anna TJ, Morakami FK, Camillo C a, et al. Step counting and energy expenditure estimation in patients with chronic obstructive pulmonary disease and healthy elderly: accuracy of 2 motion sensors. Arch Phys Med Rehabil. Elsevier Inc.; 2010. 
 26. Lee J-M, Kim Y, Welk GJ. Validity of Consumer-Based Physical Activity Monitors. Med Sci Sports Exerc. 2014
 27. [Human Activity Recognition Using Smartphones Data Set. URL:](http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones)
-28.  F.A.Khan,A.Ali,H.Abbas,N.A.H.Haldar, A cloud based healthcare framework for security and patients’ data privacy using wireless body area networks, Elsevier, Procedia Computer Science vol.34 (2014)pp.511-517, Nov 2014 
+28. F.A.Khan,A.Ali,H.Abbas,N.A.H.Haldar, A cloud based healthcare framework for security and patients’ data privacy using wireless body area networks, Elsevier, Procedia Computer Science vol.34 (2014)pp.511-517, Nov 2014 
 29. Hutchinson, C., Ward, J. < Castilon, K. Navigating the next-generation application architecture. IT Professional, 1(2), pp. 18-22, 2009 
 30. N.D.Han, L. Han, D.M.Tuan, H.O. In, M. Jo, A Scheme for data confidentiality in Cloud-assisted Wireless Body Area Networks, Elsevier, Journal of Information Science 284 (2014) pp.157-166, April 2014 
 31. S.S. Javadi and M.A. Razzaque, Security and Privacy In Wireless Body Area Networks for Healthcare Applications, DOI 10.1007/978-3-642-36169-2_6, Springer-Verilag Berlin Heidelberg 2013 
@@ -1840,3 +1869,4 @@ say?” Journal of Experimental Education, vol. 71, no. 1, pp. 83–92, 2002.
 38. [wiki](https://en.wikipedia.org/wiki/Quantitative_trait_locus)
 39. Broman, K. W., Sen, S., Owens, S. E., Manichaikul, A., Southard-Smith, E. M., and
 Churchill, G. A. The X chromosome in quantitative trait locus mapping. Genetics, 174(4):2006.
+40. V. T. van Hees, R. C. van Lummel, and K. R. Westerterp. EstimatingActivity-related Energy Expenditure Under Sedentary Conditions Usinga Tri-axial Seismic Accelerometer. Obesity, 17(6):1287–1292, 2009.
