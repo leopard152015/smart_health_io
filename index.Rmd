@@ -194,6 +194,7 @@ Developer API will be available later. Now data extraction is not posible.
 
 
 #### Test-dreve AngelSensor M1 
+
 <div style='text-align: bottom;'>
   <img title='Fig' widht='350' height='100' align='left' src='assets/img/AngelSensor.bmp'/>
 </div>
@@ -252,6 +253,7 @@ In conclusion, using AngelSensor make us free to develop our own system of energ
 Concerning accelerometer data, it seems useable. As we had not enought time to collect big dataset by ourself,  for activity recognition analysis (important step in measure energy expenditure, see 4.1.2) we will utilize dataset  from smartphones [27], which consiste analogical physical activity information from gyroscope and accelerometer.
 
 #### Test-drive Jawbone UP 24
+
 <div style='text-align: bottom;'>
   <img text="Fig" widht='350' height='100' align='left' src='assets/img/jawbone-up-1.jpg'/>
 </div>
@@ -279,20 +281,26 @@ The information  about there based step-classification concept is described in t
 We tested data access via API and confirmed the comfortability of system. 
 
 #### Microsoft Band 2
+
+<div style='text-align: bottom;'>
+  <img text="Fig" widht='350' height='100' align='left' src='assets/img/MicrosoftBand2.jpg'/>
+</div>
 This HT was not tested, but it it deserves attention and may be present the best desition. The Microsoft Band is a commercial product available to the public without any delays and problems. It features big number of important sensors: optical heart rate sensor, 3-axis accelerometer/gyrometer, ambient light sensor, UV sensor, capacitive sensor, galvanic skin response, baromete, haptic vibration motor, microphone, GPS. But the big positive point is that Microsoft has provided a SDK that allows access of the band’s sensor readings. The band communicates via Bluetooth to a synchronized smart phone. 
 So it can present a good solution as it takes access to sensors data like Angel Sensor and has user-friendly application like Jawbone, which is also important for motivating. 
 But the price is higher approximately on 100$. 
 
 ### Energy expenditure estimation
 
-Using parameters from HT we can measure and control the physical parameters, intencity of activity  and calories burnt. And as energy expenditure (EE) estimation present the key aspect in obesity determination, this section we dedicate to consept of EE measurement. 
-We quickly  investigate existing problems of EE estimation. Then  the relation between accelerometer, physiological data and EE using Bayesian models and hierarchical regression will be establised.
+Using parameters from HT we can measure and control the physical parameters, intencity of activity  and energy expenditure (EE). And as calories burnt (EE) estimation present the key aspect in obesity determination, this section we dedicate to consept of EE measurement. 
+We quickly  investigate existing problems of EE estimation. Then  the relation between accelerometer, physiological data and EE  will be establised.
 And at the end we propose models which will be able to increase accuracy level and to take into account variability in physiological signals between individuals applaying method of personalization. 
 
 **`Definition EE`**
 
-EE (Calories burnt) make up half of the energy balance equation: 
+EE = Calories burnt make up half of the energy balance equation:
+
 *Energy Balance = Energy Expenditure - Energy Intake*.
+
 We can determine three elements of EE:
 
  -  Basal metabolic rate (Energy required to maintain body functions - 60-75% of TEE)
@@ -302,38 +310,45 @@ We can determine three elements of EE:
 According our method (see section "Method description") we will take deal with AEE.
 
 **`How we can measure EE`**
-One of the most standard and  practical method of estimate EE is indirect calorimetry. It  analyzes inhale and exhale gases concentration and the rate  of  oxygen  consumption   (VO2,   mL/min)  is  used   as  the representation  of   energy expenditure according Weir's equation:  *EE=3.9×VO2+1.1×VCO2*.
-There are a couple of portable indirect calorimeters on the market, like AeroSport TEEM 100 Metabolic Analysis System,  but the participant must use a facial mask or mouthpiece during all data acquisition.
 
+One of the most standard and  practical method of estimate EE is indirect calorimetry - VO2 max test. It  analyzes inhale and exhale gases concentration and the rate  of  oxygen  consumption   (VO2,   mL/min)  is used   as  the representation  of   energy expenditure according Weir's equation:
+*Resting EE=3.9×VO2+1.1×VCO2*,
+where:
+VO2 = oxygen uptake (ml/min)
+VCO2 = carbon dioxide output (ml/min)
 
-**`Dataset`**
-
+There are a couple of portable indirect calorimeters on the market, like AeroSport TEEM 100 Metabolic Analysis System,  but the participant must use a facial mask during all data acquisition. 
+In fact, in the begining of research it will be very useful to create for each paitant  metabolic profile provides detailed information on there caloric burn rate and individualized heart rate zones by indirect calorimetry. Because it show   the ability of patient to absorb oxygen and exactly the level of oxygen consumption by the muscles dependes, for example, the ability to run fast ot to keep this speed long time. It helps to personalize workout plan and to determine the algorithms of EE estimation giving higher accuracy. Moreover, scientists have come to the conclusion that the VO2max indicator is  inherited. And the main trouble is that the ability to improve this  value is also inheruted. In 2007-2008, the Norwegian researchers conducted  big number of testes on the participants of the experiment revealed the dynamics of VO2max. the resultats  shown that despite of certain genetics limits everyone  improved his physical forme and reached a good level of this indicator in condition of the regular thaining progress. This indicator could help not only to create the accurate system of EE estimation, but alsopresent interesting phenotype for study in this work.
 
 **`Problems of EE estimation`**
 
-We have already talked that many HT in the consumer market  estimate EE by regression models using accelerometer data, HR, or a combination of the two, across all activities with  including anthropometric characteristics in the equation, given the relation between body size and EE. Some of them are claiming higher accuracy due to a combination of accelerometer, gyroscope and physiological data (e.g. Basis or the Apple watch).  But the resultats is also not nearly enought, partly because these devices are simply combining multiple signals without personalization. As it has been explained in section "Method description", the personalization of data is very important and  helping to avoid suboptimal results.
-It can be demonstrated very easily in the following example: we want to estimate EE from HR  and there are two participants with similar anthropometric characteristics (e.g. similar body weight), but different sport level in our experiment; HR differs during moderate to vigorous activities explaining by the participant's fitness level. It means we can measure EE from HR  if only  HR is properly normalized.
-However, there is a strong link between HR, oxygen consumption and EE, which motivates the use of HR data for EE estimation. Let's look at example: If we use only accelerometer, for which the rationale is that body motion close to the body's center of mass, we will see the wrong  relation between accelerometer and EE for the participant over different activities. Single regression models are unable to ﬁt all the activities,since the slope and intercept of the regression model changebased on the activity performed while data is collected [40]. So  the relation gets very weak for non-weight-bearing some types of activities, such as biking, while it's reasonably good for walking and running. 
-So we can denote two points:
+We have already talked that many HT in the consumer market provide EE estimation in these applications. They applay regression models using accelerometer data, HR, or a combination of the two, across all activities with  including anthropometric characteristics in the equation, given the relation between body size and EE. Some of them are claiming higher accuracy due to a combination of accelerometer, gyroscope and physiological data (e.g. Basis or the Apple watch).  But the resultats is also not nearly enought, partly because these devices are simply combining multiple signals without personalization. As it has been explained in section "Method description", the personalization of data is very important and  helping to avoid suboptimal results.
+This fact can be demonstrated very easily in the following example: we want to estimate EE from HR  and there are two participants with similar anthropometric characteristics (e.g. similar body weight, etc.), but with different sport level in our experiment; Normaly  individuals with similar body size expend similar amounts of energy during a certain activity, however their HR differs during moderate to vigorous activities explaining by the participant's fitness level. It means we can measure EE from HR  if only  HR is properly normalized.
+However, there is a strong link between HR, oxygen consumption and EE, which motivates the use of physiological data for EE estimation. Let's look at another example: If we use only accelerometer, for which the rationale is that body motion close to the body's center of mass, we will see the wrong  relation between accelerometer and EE for the participant over different activities. Single regression models are unable to ﬁt all the activities,since the slope and intercept of the regression model changebased on the activity performed while data is collected [40]. So  the relation gets very weak for non-weight-bearing some types of activities, such as biking, while it's reasonably good for walking and running. 
+
+
+We can denote two points:
 
  -  Accelerometer data alone is unable to fit all activities, biking is modeled as a sedentary activity, due to the lack of motion, and therefore results are inaccurate for both high intensity activities without body motion (i.e. biking) and sedentary activities (lying, sedentary behavior);
- - HR  could show increased value in low intensity activity after high intensity activity for people without regular sports training.
- 
- 
- 
- **`Bayesian hierarchical models`**
+ -  HR  could show increased value in low intensity activity after high intensity activity for people without regular sports training.
 
-Bayesian hierarchical approach fit very well EE estimation  since parameters are naturally interposed (belong to different levels). For example in the dataset we have anthropometric parameters at the higher (person) level, such as weight, age, etc., and at the same time we have many physiological data and reference EE. There are also other clusterings in the dataset. Some of them non-interposed,  for example the different activities performed.
+**`Improving accelerometer data`**
+ 
+For improving accelerometer data almost all modern devices and many researches (like [40], [41]) try to use activity recognition algorithms, where activity recognition is performed in different way. For example, it depends on sensor location,  the number and types of clusters in set: it could classify 5 or 50 activities with different levels of accuracy, as well as  the set  can be mutually exclusive. 
+In this work we propose to create own system of activity recognition using data from HT throw SDK.  For that we have to build the machine learning model which will give the resultats closed to VO2max-test.   In section "Activity recognition" we make simple example of classificator based on classical machine learning algorithms and show that  applaing activity recognition algorithms makes system much more flexiable, for example it gives the ability to selectively use HR data - only when the activity is of a certain type.    
 
-In a hierarchical model features at the lower level are formed by features at the higher level,  this means that anthropometric data impacts the relation between accelerometer data and EE in different people. So we have two levels - individual level and group level.  Without going into too many details, we build a model, where the matrix of individual level parameters  can either include accelerometer data, HR data or both. As a high level we use following  body weight only, since the age range of our dataset is pretty small. 
+**`Improving physiological data`**
 
 
 **(to be continued)**
-```{r echo=F}
-#We will evaluate model using following techniq: leaving one subject out cross validation, building models #using data from all participant execpt one and then validating models using the remaining participant.
-#This procedure is repeated 9 times (number of participants) and results are averaged. 
+```{r, echo = F}
 
-#As performance metric for EE estimation, Root Mean Square Error (RMSE) will be used. EE will be #considered as non-normalized values in kcal/min and body weight wiil be included as a predictor for #weight bearing activities. 
+# **`Bayesian hierarchical models`**
+
+#Bayesian hierarchical approach fit very well EE estimation  since parameters are naturally interposed #(belong to different levels). For example in the dataset we have anthropometric parameters at the higher #(person) level, such as weight, age, etc., and at the same time we have many physiological data and #reference EE. There are also other clusterings in the dataset. Some of them non-interposed,  for example #the different activities performed.
+
+#In a hierarchical model features at the lower level are formed by features at the higher level,  this #means that anthropometric data impacts the relation between accelerometer data and EE in different #people. So we have two levels - individual level and group level.  Without going into too many details, #we build a model, where the matrix of individual level parameters  can either include accelerometer data, #HR data or both. As a high level we use following  body weight only, since the age range of our dataset #is pretty small. 
+
 ```
 
 
@@ -342,12 +357,14 @@ In a hierarchical model features at the lower level are formed by features at th
 
  - Presence of HR sensor in HT does not meen more accuracy. The approach of estimation is important. 
  - Better using the accelerometer which worn on the chest, because results would be much worse at the wrist, due to the lack of agreement between whole body motion and wrist movement;
- - Combining physiological and accelerometer (+gyroscope see section Activity recognition) data gives the best results;
+ - Combining physiological and accelerometer (+gyroscope see section "Activity recognition") data gives the best results;
+ - Using activity recognition makes system more accurate.
  - Method of personalization  by normalizing physiological data for individual improves accuracy for moderate and vigorous activities.  
  - Hierarchical Bayesian models propose a suitable solution to the problem of physiological signals normalization, by modeling the relation between HR and fitness, without the need for explicit HR normalization. 
 
 
 ### Activity recognition
+
 Physical activity recognition is one of the key problem for determining accuracy of energy expenditure - as one of the main parameters in obesity classification and treatment. 
 Previous subsection describes the components needed to gather the relevant data from a person in context of everyday activity. 
 This subsection shows simple example how machine learning techniques are able to determine the activity from the sensors data for help to increases the accuracy of the measurement results. This approach is validated over real data from physical activity monitoring dataset from smartphones [27](http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones.) 
@@ -1869,4 +1886,6 @@ say?” Journal of Experimental Education, vol. 71, no. 1, pp. 83–92, 2002.
 38. [wiki](https://en.wikipedia.org/wiki/Quantitative_trait_locus)
 39. Broman, K. W., Sen, S., Owens, S. E., Manichaikul, A., Southard-Smith, E. M., and
 Churchill, G. A. The X chromosome in quantitative trait locus mapping. Genetics, 174(4):2006.
-40. V. T. van Hees, R. C. van Lummel, and K. R. Westerterp. EstimatingActivity-related Energy Expenditure Under Sedentary Conditions Usinga Tri-axial Seismic Accelerometer. Obesity, 17(6):1287–1292, 2009.
+40. V. T. van Hees, R. C. van Lummel, and K. R. Westerterp. Estimating Activity-related Energy Expenditure Under Sedentary Conditions Usinga Tri-axial Seismic Accelerometer. Obesity, 17(6):1287–1292, 2009.
+41. A. G. Bonomi. Improving assessment of daily energy expenditure by identifying types of physical activity with a single accelerometer. Journal 
+of Applied Physiology, 107(3):655-661, 2009.
