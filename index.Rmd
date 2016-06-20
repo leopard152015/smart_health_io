@@ -311,14 +311,14 @@ According our method (see section "Method description") we will take deal with A
 
 **`How we can measure EE`**
 
-One of the most standard and  practical method of estimate EE is indirect calorimetry - VO2 max test. It  analyzes inhale and exhale gases concentration and the rate  of  oxygen  consumption   (VO2,   mL/min)  is used   as  the representation  of   energy expenditure according Weir's equation:
+One of the most standard and  practical method of estimate EE is indirect calorimetry - **VO2max test**. It  analyzes inhale and exhale gases concentration and the rate  of  oxygen  consumption   (VO2,   mL/min)  is used   as  the representation  of   energy expenditure according Weir's equation:
+
 *Resting EE=3.9×VO2+1.1×VCO2*,
-where:
-VO2 = oxygen uptake (ml/min)
-VCO2 = carbon dioxide output (ml/min)
+
+where: VO2 = oxygen uptake (ml/min),\; VCO2 = carbon dioxide output (ml/min).
 
 There are a couple of portable indirect calorimeters on the market, like AeroSport TEEM 100 Metabolic Analysis System,  but the participant must use a facial mask during all data acquisition. 
-In fact, in the begining of research it will be very useful to create for each paitant  metabolic profile provides detailed information on there caloric burn rate and individualized heart rate zones by indirect calorimetry. Because it show   the ability of patient to absorb oxygen and exactly the level of oxygen consumption by the muscles dependes, for example, the ability to run fast ot to keep this speed long time. It helps to personalize workout plan and to determine the algorithms of EE estimation giving higher accuracy. Moreover, scientists have come to the conclusion that the VO2max indicator is  inherited. And the main trouble is that the ability to improve this  value is also inheruted. In 2007-2008, the Norwegian researchers conducted  big number of testes on the participants of the experiment revealed the dynamics of VO2max. the resultats  shown that despite of certain genetics limits everyone  improved his physical forme and reached a good level of this indicator in condition of the regular thaining progress. This indicator could help not only to create the accurate system of EE estimation, but alsopresent interesting phenotype for study in this work.
+In fact, in the begining of research it will be very useful to create for each paitant  metabolic profile provides detailed information on there caloric burn rate and individualized heart rate zones by indirect calorimetry. Because it shows   the ability of patient to absorb oxygen. And exactly the level of oxygen consumption by the muscles influences to, for example, the ability to run fast to keep this speed long time. It helps to personalize workout plan and to determine the algorithms of EE estimation giving higher accuracy. Moreover, scientists have come to the conclusion that the VO2max indicator is  inherited. And the main trouble is that the ability to improve this  value is also inheruted. In 2007-2008, the Norwegian researchers conducted  big number of testes on the participants of the experiment revealed the dynamics of VO2max. the resultats  shown that despite of certain genetics limits everyone  improved his physical forme and reached a good level of this indicator in condition of the regular thaining progress. This indicator could help not only to create the accurate system of EE estimation, but also present interesting phenotype for study in this work.
 
 **`Problems of EE estimation`**
 
@@ -339,17 +339,19 @@ In this work we propose to create own system of activity recognition using data 
 
 **`Improving physiological data`**
 
+Activity recognition method brought many improvements in  EE measurement, and are now widely used. However we have another problem with HR showing huge variability across individuals and it seems to be not resolved. We have to develop models that fully exploit the potential of physiological data across different subjects, without requiring individual calibration. 
+For resolving this problems some researches propose the following possiable ways:
 
-**(to be continued)**
-```{r, echo = F}
-
-# **`Bayesian hierarchical models`**
-
-#Bayesian hierarchical approach fit very well EE estimation  since parameters are naturally interposed #(belong to different levels). For example in the dataset we have anthropometric parameters at the higher #(person) level, such as weight, age, etc., and at the same time we have many physiological data and #reference EE. There are also other clusterings in the dataset. Some of them non-interposed,  for example #the different activities performed.
-
-#In a hierarchical model features at the lower level are formed by features at the higher level,  this #means that anthropometric data impacts the relation between accelerometer data and EE in different #people. So we have two levels - individual level and group level.  Without going into too many details, #we build a model, where the matrix of individual level parameters  can either include accelerometer data, #HR data or both. As a high level we use following  body weight only, since the age range of our dataset #is pretty small. 
-
-```
+ -  Explicit HR normalization [42]
+ 
+We could normalize physiological data using a person's physiological signals under high intensity         activities. But for avoiding to re-perform individual calibrations according changes the relation         between physiological data and physical form of person, we can use  low intensity activities of daily     living, automatically recognized using different machine learning models, to contextualize HR or any      other physiological signal, and then predict what the physiological data during a high intensity          activity would be - without having to actually perform that activity [42]. Knowing the   "intense"        value,   we can normalize the signal across individuals. 
+    ![Fig. Personalizing of EE estivation ](assets/img/personalizing-eee.jpg)
+    
+ -  Hierarchical model including estimated fitness as group level predictor [43]
+ 
+Alternatively, we can use a more sophisticated solution, described in the work [43], which focused on     using hierarchical Bayesian models. Bayesian hierarchical approach fits very well in tasks of EE estimation, because parameters are naturally interposed: belong to different levels.  It meens that features at the second level influence to features at the first level. We will distinguish two levels - individual (first) level  and group  (second) level  of a hierarchical structure. The group level parameters   impact the relation between predictors at the first level and the outcome variable. 
+In this method we have to understand the cause behind the necessity  of  individual calibration. For example, in case of HR, it is differences in fitness level of participances. So we could measure this level and then create a hierarchical model, using it as a  group level parameter. In this case fitness level directly impacts the relation between HR and EE,  without the need for explicit HR normalization.
+How to estimate fitness level is other question. The principle is used by many sub maximal fitness tests (like Rockport Walk Test), where HR at a certain intensity is used as predictor - together with other variables - to estimate VO2max. The difference is that by using context recognition algorithms, there is no need to perform lab tests or specific exercises. We can take the HR while walking at  certain speed as our sub maximal HR and then predict VO2max. Finally fitness level is included as group level parameter for prediction of EE.
 
 
 
@@ -357,10 +359,10 @@ In this work we propose to create own system of activity recognition using data 
 
  - Presence of HR sensor in HT does not meen more accuracy. The approach of estimation is important. 
  - Better using the accelerometer which worn on the chest, because results would be much worse at the wrist, due to the lack of agreement between whole body motion and wrist movement;
- - Combining physiological and accelerometer (+gyroscope see section "Activity recognition") data gives the best results;
+ - Combining physiological and accelerometer (+ gyroscope see section "Activity recognition") data gives the best results;
  - Using activity recognition makes system more accurate.
  - Method of personalization  by normalizing physiological data for individual improves accuracy for moderate and vigorous activities.  
- - Hierarchical Bayesian models propose a suitable solution to the problem of physiological signals normalization, by modeling the relation between HR and fitness, without the need for explicit HR normalization. 
+ - Hierarchical Bayesian models propose a flexible alternative solution to the problem of physiological signals normalization, by installing the relation between HR and fitness level, without HR normalization. 
 
 
 ### Activity recognition
@@ -679,9 +681,7 @@ Accuracy for RF model with PCA  on 5% lower than for RF model with full features
 
 
 Above we demonstrated how  successfully perform human activity classification based on a simple feature extraction process of a smartphone time series. Two classifiers (SVM and RF) with varying computational costs and similar profiles of performance were utilised. 
-The lists of important variables by RF and IGR  raise the question of whether to use the gyroscope to improve recognition accuracy. But it fact absence of gyroscope data among important variable can be explain.  Among  accelerometer   features  using  X-axis  acceleration  showed  the  next  lowest  
-prediction  error because  X-axis  was   aligned  with  the  direction  of  forward  movement. And in context of simle activity recognition it is one of the most affecting features. But from physical point of view, due to gyroscopes only  capturing dynamic rotational movement free from   gravitational  bias, using gyroscope  features  in  Y   and  Z   axes  have to show  lower  errors  than  
-corresponding acceleration Y  and Z axes. For achievement higher accuracy and reliably recognize using stairs and rotations, we need to applay more sophisticated system of activitty recognition, which requied combining accelerometer and gyroscope information for reduceing prediction errors.
+The lists of important variables by RF and IGR  raise the question of whether to use the gyroscope to improve recognition accuracy. But it fact absence of gyroscope data among important variable can be explain. Among  accelerometer   features  using  X-axis  acceleration  showed  the  next  lowest prediction  error because  X-axis  was   aligned  with  the  direction  of  forward  movement. And in context of simle activity recognition it is one of the most affecting features. But from physical point of view, due to gyroscopes only  capturing dynamic rotational movement free from   gravitational  bias, using gyroscope  features  in  Y   and  Z   axes  have to show  lower  errors  than  corresponding acceleration Y  and Z axes. For achievement higher accuracy and reliably recognize using stairs and rotations, we need to applay more sophisticated system of activitty recognition, which requied combining accelerometer and gyroscope information for reduceing prediction errors.
 
 
 
@@ -1889,3 +1889,5 @@ Churchill, G. A. The X chromosome in quantitative trait locus mapping. Genetics,
 40. V. T. van Hees, R. C. van Lummel, and K. R. Westerterp. Estimating Activity-related Energy Expenditure Under Sedentary Conditions Usinga Tri-axial Seismic Accelerometer. Obesity, 17(6):1287–1292, 2009.
 41. A. G. Bonomi. Improving assessment of daily energy expenditure by identifying types of physical activity with a single accelerometer. Journal 
 of Applied Physiology, 107(3):655-661, 2009.
+42.  M. Altini, J. Penders, and O. Amft. Personalizing energy expenditure estimation using a cardiorespiratory fitness predicate. In Pervasive Computing Technologies for Healthcare (PervasiveHealth), 2013 7th International Conference on, pages 65-72. IEEE, 2013.
+43. M. Altini, P. Casale, J. Penders, O. Amft. "Personalized cardiorespiratory fitness and energy expenditure estimation using hierarchical bayesian models" accepted for publication in the Journal of biomedical informatics. 2015.
