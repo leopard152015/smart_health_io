@@ -311,14 +311,112 @@ According our method (see section "Method description") we will take deal with A
 
 **`How we can measure EE`**
 
-One of the most standard and  practical method of estimate EE is indirect calorimetry - **VO2max test**. It  analyzes inhale and exhale gases concentration and the rate  of  oxygen  consumption   (VO2,   mL/min)  is used   as  the representation  of   energy expenditure according Weir's equation:
+One of the most standard and  practical method of estimate EE is indirect calorimetry - **VO2max test**. It  analyzes inhale and exhale gases concentration and the rate  of  oxygen  consumption   (VO2,   mL/min) is used   as  the representation  of   energy expenditure according Weir's equation:
 
 *Resting EE=3.9×VO2+1.1×VCO2*,
 
-where: VO2 = oxygen uptake (ml/min),\; VCO2 = carbon dioxide output (ml/min).
+where: VO2 = oxygen uptake (ml/min); VCO2 = carbon dioxide output (ml/min).
 
+Metabolic carts offer invaluable insight into exercise metabolism, allowing interrogation of each breath. 
 There are a couple of portable indirect calorimeters on the market, like AeroSport TEEM 100 Metabolic Analysis System,  but the participant must use a facial mask during all data acquisition. 
-In fact, in the begining of research it will be very useful to create for each paitant  metabolic profile provides detailed information on there caloric burn rate and individualized heart rate zones by indirect calorimetry. Because it shows   the ability of patient to absorb oxygen. And exactly the level of oxygen consumption by the muscles influences to, for example, the ability to run fast to keep this speed long time. It helps to personalize workout plan and to determine the algorithms of EE estimation giving higher accuracy. Moreover, scientists have come to the conclusion that the VO2max indicator is  inherited. And the main trouble is that the ability to improve this  value is also inheruted. In 2007-2008, the Norwegian researchers conducted  big number of testes on the participants of the experiment revealed the dynamics of VO2max. the resultats  shown that despite of certain genetics limits everyone  improved his physical forme and reached a good level of this indicator in condition of the regular thaining progress. This indicator could help not only to create the accurate system of EE estimation, but also present interesting phenotype for study in this work.
+
+Below, we demonstrate the exmaple of perfoming substrate utilisation using metabolic cart data from VO2 R-package collected during: 
+
+ -   a fast-ramp, maximal, graded exercise test;
+ -   a slow-ramp, submaximal, graded exercise test.
+ 
+For the estimation of substrate utilisation by way of gas exchange we have to prepare oxygen uptake data. Firstly we filtered this data form unwanted noises. Then according to Robergs and col.[45] removed  ventilatory and cardiovascular frequency components (leaving theoretically only the muscular oxygen uptake kinetics) via the application of a 0.04 Hz, using third-order Butterworth filter. And finally, we used the equations of Jeukendrup & Wallis[44] which are implemented in the VO2 - package  for perfoming *energy expenditure  (ee)*, *carbohydrate oxidation rates (choox)*, and *fat oxidation rates (fatox)*.
+```{r echo=F, fig.height = 3}
+library(vo2)
+library(magrittr)
+library(dplyr)
+library(ggplot2)
+
+data(gxtmax)
+data(gxtsub)
+# converting these data sets to the clean-printing `tbl` format of `dplyr` for the purposes of this demo
+gxtmax <- as.tbl(gxtmax)
+gxtsub <- as.tbl(gxtsub)
+#cleaning data
+#Errant values
+## Exclude those breaths that exhibit an oxygen uptake (VO2)
+## > 3 standard deviations  from the local 30 breath mean.
+#gxtmax %$% errant(vo2, method = "outlier", breaths = 30) %>% which
+#remove errant value
+gxtmax %<>% subset(!errant(vo2, "outlier"))
+gxtsub %<>% subset(!errant(vo2, "outlier"))
+#The removal of ventilatory and cardiovascular frequency components---leaving theoretically only the #muscular oxygen uptake kinetics---via the application of a 0.04 Hz, low-pass, third-order Butterworth #filter.
+gxtmax %<>% mutate(vo2_smth = vo2_butter(time, vo2, zerolag = FALSE))
+# Substrate utilisation
+gxtsub %<>%  
+  ## Convert gas exchange values to L/min.
+  mutate_each(funs(. / 1000), matches("^v.*2$")) %>%
+  bind_cols(metab(vo2, vco2, data = ., as.ee = TRUE))
+gxtsub %>% 
+  ## Drop unneccessary columns and convert to long format.
+  select(-matches("v|2")) %>% 
+  tidyr::gather(key, value, -time, -wr, factor_key = TRUE) %>% 
+  filter(wr < 260) %>%
+  ## Plot.
+  ggplot(aes(x = factor(wr), y = value), Caption="") + geom_boxplot() +
+  facet_wrap(~key) + 
+  labs(x = "Power (Watts)", y = "Energy Expenditure (kJ/min)", 
+       title = "Submaximal substrate utilisation")
+
+```
+
+It would be interesting to  estimate the  rate of *maximal fat oxidation*. Taking into account that the rate of fat oxidation during graded exercise presents as a quadratic function, it's maximum can be extracted  as the vertex of a fitted polynomial:
+```{r echo = F, fig.height = 3}
+gxtsub %$% fatmax(fatox, x = wr)  # VO2 could also be used.
+
+## Plot.
+gxtsub %>% ggplot(aes(x = wr, y = fatox * 1000)) +
+  stat_summary(fun.data = mean_cl_normal) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2)) +
+  geom_vline(aes(xintercept = fatmax(fatox, wr)), linetype = 3) +
+  labs(x = "Power (Watts)", y = "Fat Oxidation (J/min)", 
+       title = expression(Fat[max]))
+```
+
+And  at the end,  we can try to evalue another important  parameter -  efficiency during exercise.
+The two dominating methods are calculations of gross *efficiency* and *delta* efficiency, were described in this work[46].
+
+```{r echo=F, fig.height=3}
+
+gxtsub %<>% mutate(ee.W = ee * 1000 / 60, GE = wr / ee.W)
+
+## Produce the model.
+mod_ge <- nls(GE ~ A * (1 - exp(-wr / C)), data = na.omit(gxtsub), 
+              start = list(A = 0.3, C = 200))
+
+## Plot.
+na.omit(gxtsub) %>% ggplot(aes(x = wr, y = GE)) + 
+  geom_jitter(aes(colour = factor(wr)), size = 0.7) +
+  stat_summary(fun.data = mean_cl_normal) + 
+  stat_smooth(method = "nls", formula = y ~ A * (1 - exp(-x / C)), se = FALSE,
+              method.args = list(start = list(A = 0.3, C = 200))) +
+  guides(colour = FALSE) +
+  labs(x = "Work rate (Watts)", 
+       y = "Gross efficiency (%)", 
+       title = sprintf("Gross efficiency: ~%.3f", coef(mod_ge)["A"]))
+
+# Delta efficiency --------------------------
+## Produce the model.
+mod_de <- lm(wr ~ ee.W, data = na.omit(gxtsub))
+
+## Plot.
+na.omit(gxtsub) %>% ggplot(aes(x = ee.W, y = wr)) +
+  geom_jitter(aes(colour = factor(wr)), size = 0.7) +
+  geom_smooth(method = "lm") + 
+  guides(colour = FALSE) +
+  labs(x = "Metabolic energy expenditure (Watts)",
+       y = "Work rate (Watts)", 
+       title = sprintf("Delta efficiency: ~%.3f", coef(mod_de)[2]))
+
+```
+
+
+In fact, in the begining of research it will be very useful to create for each paitant  metabolic profile provides detailed information on there caloric burn rate and individualized heart rate zones by indirect calorimetry. Because it shows   the ability of patient to absorb oxygen. And exactly the level of oxygen consumption by the muscles influences to, for example, the ability to run fast to keep this speed long time. It helps to personalize workout plan and to determine the algorithms of EE estimation giving higher accuracy. Moreover, scientists have come to the conclusion that the VO2max indicator is  inherited. And the main trouble is that the ability to improve this  value is also inheruted. In 2007-2008, the Norwegian researchers conducted  big number of testes on the participants of the experiment revealed the dynamics of VO2max. The resultats  shown that despite of certain genetics limits everyone  improved his physical forme and reached a good level of this indicator in condition of the regular thaining progress. This indicator could help not only to create the accurate system of EE estimation, but also present interesting phenotype for study in this work.
 
 **`Problems of EE estimation`**
 
@@ -351,7 +449,7 @@ We could normalize physiological data using a person's physiological signals und
  
 Alternatively, we can use a more sophisticated solution, described in the work [43], which focused on     using hierarchical Bayesian models. Bayesian hierarchical approach fits very well in tasks of EE estimation, because parameters are naturally interposed: belong to different levels.  It meens that features at the second level influence to features at the first level. We will distinguish two levels - individual (first) level  and group  (second) level  of a hierarchical structure. The group level parameters   impact the relation between predictors at the first level and the outcome variable. 
 In this method we have to understand the cause behind the necessity  of  individual calibration. For example, in case of HR, it is differences in fitness level of participances. So we could measure this level and then create a hierarchical model, using it as a  group level parameter. In this case fitness level directly impacts the relation between HR and EE,  without the need for explicit HR normalization.
-How to estimate fitness level is other question. The principle is used by many sub maximal fitness tests (like Rockport Walk Test), where HR at a certain intensity is used as predictor - together with other variables - to estimate VO2max. The difference is that by using context recognition algorithms, there is no need to perform lab tests or specific exercises. We can take the HR while walking at  certain speed as our sub maximal HR and then predict VO2max. Finally fitness level is included as group level parameter for prediction of EE.
+How to estimate fitness level is other question and we talked a little bit on this topic in subsection "How we can measure EE". The principle is used by many sub maximal fitness tests (like Rockport Walk Test), where HR at a certain intensity is used as predictor - together with other variables - to estimate VO2max. The difference is that by using context recognition algorithms, there is no need to perform lab tests or specific exercises. We can take the HR while walking at  certain speed as our sub maximal HR and then predict VO2max. Finally fitness level is included as group level parameter for prediction of EE.
 
 
 
@@ -1891,3 +1989,6 @@ Churchill, G. A. The X chromosome in quantitative trait locus mapping. Genetics,
 of Applied Physiology, 107(3):655-661, 2009.
 42.  M. Altini, J. Penders, and O. Amft. Personalizing energy expenditure estimation using a cardiorespiratory fitness predicate. In Pervasive Computing Technologies for Healthcare (PervasiveHealth), 2013 7th International Conference on, pages 65-72. IEEE, 2013.
 43. M. Altini, P. Casale, J. Penders, O. Amft. "Personalized cardiorespiratory fitness and energy expenditure estimation using hierarchical bayesian models" accepted for publication in the Journal of biomedical informatics. 2015.
+44. Jeukendrup AE, Wallis GA. Measurement of Substrate Oxidation During Exercise by Means of Gas Exchange Measurements. International Journal of Sports Medicine 26: S28–S37, 2005.
+45. Robergs RA, Dwyer D, Astorino T. Recommendations for improved data processing from expired gas analysis indirect calorimetry. Sports Medicine 40: 95–111, 2010.
+46. Ettema G, Lorås HW. Efficiency in cycling: a review. Eur J Appl Physiol 106: 1–14, 2009.
